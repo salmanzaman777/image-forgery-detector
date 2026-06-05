@@ -1,4 +1,4 @@
----
+﻿---
 title: Image Forgery Detector
 emoji: 🛡️
 colorFrom: blue
@@ -24,3 +24,9 @@ The app uses **Grad-CAM** to visualize which parts of the image the model focuse
 
 ## Deployment:
 This app is designed to be deployed on Hugging Face Spaces using Streamlit.
+
+## Repository:
+[https://github.com/salmanzaman777/image-forgery-detector](https://github.com/salmanzaman777/image-forgery-detector)
+
+## Documents:
+- [Project Report](Documents/Project_Report_Digital_Image_Forgery_Detector.docx)
