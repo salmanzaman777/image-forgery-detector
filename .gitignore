@@ -1,0 +1,41 @@
+# --- Local IDE / Claude Code ---
+.claude/
+.vscode/
+.idea/
+
+# --- HTML build artefact (rebuilt by pandoc; not source) ---
+Documents/header_inline.html
+
+# --- Future: data files (see PROJECT_SCOPE.md §5.2 + §6) ---
+data/raw/
+data/processed/
+
+# --- Future: training outputs (weights live on HuggingFace Hub) ---
+checkpoints/
+logs/
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# --- Jupyter ---
+.ipynb_checkpoints/
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+
+# --- Secrets / credentials ---
+.env
+.env.local
+*.pem
+kaggle.json
