@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Remediation & Enhancement Plan — Image Forgery Detector</title>
+<style>
+  /* ── Reset & Base ─────────────────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --critical: #dc2626;
+    --critical-bg: #fef2f2;
+    --critical-border: #fca5a5;
+    --high: #d97706;
+    --high-bg: #fffbeb;
+    --high-border: #fcd34d;
+    --medium: #2563eb;
+    --medium-bg: #eff6ff;
+    --medium-border: #93c5fd;
+    --low: #16a34a;
+    --low-bg: #f0fdf4;
+    --low-border: #86efac;
+    --code-bg: #0f172a;
+    --code-text: #e2e8f0;
+    --sidebar-w: 270px;
+    --header-h: 64px;
+  }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    color: #1e293b;
+    background: #f8fafc;
+  }
+
+  /* ── Top Header ───────────────────────────────────────────────── */
+  .top-header {
+    position: fixed; top: 0; left: 0; right: 0;
+    height: var(--header-h);
+    background: #0f172a;
+    display: flex; align-items: center; padding: 0 32px;
+    z-index: 200;
+    gap: 16px;
+  }
+  .top-header .shield { font-size: 26px; }
+  .top-header h1 {
+    font-size: 17px; font-weight: 700; color: #f1f5f9;
+    line-height: 1.2;
+  }
+  .top-header h1 span { color: #94a3b8; font-weight: 400; font-size: 13px; display: block; }
+  .top-header .tag {
+    margin-left: auto;
+    background: #1e3a5f;
+    color: #93c5fd;
+    font-size: 12px; font-weight: 600;
+    padding: 4px 12px; border-radius: 20px;
+    border: 1px solid #2563eb44;
+  }
+
+  /* ── Sidebar ──────────────────────────────────────────────────── */
+  .sidebar {
+    position: fixed;
+    top: var(--header-h); left: 0; bottom: 0;
+    width: var(--sidebar-w);
+    background: #fff;
+    border-right: 1px solid #e2e8f0;
+    overflow-y: auto;
+    padding: 24px 0;
+    z-index: 100;
+  }
+  .sidebar-section {
+    padding: 6px 24px 2px;
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: #94a3b8;
+    margin-top: 12px;
+  }
+  .sidebar a {
+    display: flex; align-items: center; gap: 10px;
+    padding: 7px 24px;
+    font-size: 13px; color: #475569;
+    text-decoration: none;
+    border-left: 3px solid transparent;
+    transition: all 0.15s;
+  }
+  .sidebar a:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+    border-left-color: #94a3b8;
+  }
+  .sidebar a .badge {
+    font-size: 10px; font-weight: 700;
+    padding: 2px 6px; border-radius: 4px;
+    flex-shrink: 0;
+  }
+  .badge.critical { background: var(--critical-bg); color: var(--critical); }
+  .badge.high     { background: var(--high-bg);     color: var(--high); }
+  .badge.medium   { background: var(--medium-bg);   color: var(--medium); }
+  .badge.low      { background: var(--low-bg);      color: var(--low); }
+
+  /* ── Main Content ─────────────────────────────────────────────── */
+  .main {
+    margin-left: var(--sidebar-w);
+    margin-top: var(--header-h);
+    padding: 40px 48px 80px;
+    max-width: 960px;
+  }
+
+  /* ── Hero ─────────────────────────────────────────────────────── */
+  .hero {
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+    border-radius: 16px;
+    padding: 40px 44px;
+    margin-bottom: 40px;
+    color: #f1f5f9;
+  }
+  .hero h2 { font-size: 26px; font-weight: 800; margin-bottom: 8px; }
+  .hero p  { color: #94a3b8; font-size: 14px; max-width: 600px; }
+  .hero .stats {
+    display: flex; gap: 24px; margin-top: 28px; flex-wrap: wrap;
+  }
+  .hero .stat {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 14px 20px;
+    min-width: 110px;
+  }
+  .hero .stat .n { font-size: 28px; font-weight: 800; line-height: 1; }
+  .hero .stat .l { font-size: 11px; color: #94a3b8; margin-top: 4px; }
+  .hero .stat.c .n { color: #f87171; }
+  .hero .stat.h .n { color: #fbbf24; }
+  .hero .stat.m .n { color: #60a5fa; }
+  .hero .stat.lo .n { color: #4ade80; }
+
+  /* ── Issue Summary Table ──────────────────────────────────────── */
+  .summary-table {
+    width: 100%; border-collapse: collapse;
+    background: #fff; border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    margin-bottom: 48px;
+  }
+  .summary-table th {
+    background: #f1f5f9;
+    text-align: left; padding: 12px 16px;
+    font-size: 12px; font-weight: 700;
+    letter-spacing: 0.05em; text-transform: uppercase;
+    color: #64748b;
+  }
+  .summary-table td {
+    padding: 12px 16px; font-size: 13.5px;
+    border-top: 1px solid #f1f5f9;
+    vertical-align: middle;
+  }
+  .summary-table tr:hover td { background: #fafafa; }
+  .summary-table td code {
+    background: #f1f5f9; padding: 2px 6px;
+    border-radius: 4px; font-size: 12px;
+    font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+    color: #0f172a;
+  }
+  .num-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 24px; height: 24px; border-radius: 50%;
+    font-size: 12px; font-weight: 700;
+    background: #e2e8f0; color: #475569;
+  }
+
+  /* ── Section Headings ─────────────────────────────────────────── */
+  .section-header {
+    display: flex; align-items: center; gap: 12px;
+    margin: 48px 0 24px;
+  }
+  .section-header .pill {
+    padding: 6px 18px; border-radius: 99px;
+    font-size: 12px; font-weight: 800;
+    letter-spacing: 0.08em; text-transform: uppercase;
+  }
+  .pill.critical { background: var(--critical); color: #fff; }
+  .pill.high     { background: var(--high);     color: #fff; }
+  .pill.medium   { background: var(--medium);   color: #fff; }
+  .pill.low      { background: var(--low);      color: #fff; }
+  .section-header hr {
+    flex: 1; border: none; border-top: 2px solid #e2e8f0;
+  }
+
+  /* ── Fix Cards ────────────────────────────────────────────────── */
+  .fix-card {
+    background: #fff;
+    border-radius: 14px;
+    border: 1.5px solid #e2e8f0;
+    margin-bottom: 28px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .fix-card.critical { border-color: var(--critical-border); }
+  .fix-card.high     { border-color: var(--high-border); }
+  .fix-card.medium   { border-color: var(--medium-border); }
+  .fix-card.low      { border-color: var(--low-border); }
+
+  .fix-header {
+    display: flex; align-items: center; gap: 14px;
+    padding: 20px 24px;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  .fix-num {
+    width: 36px; height: 36px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; font-weight: 800; flex-shrink: 0;
+  }
+  .fix-card.critical .fix-num { background: var(--critical-bg); color: var(--critical); }
+  .fix-card.high     .fix-num { background: var(--high-bg);     color: var(--high); }
+  .fix-card.medium   .fix-num { background: var(--medium-bg);   color: var(--medium); }
+  .fix-card.low      .fix-num { background: var(--low-bg);      color: var(--low); }
+
+  .fix-title { font-size: 16px; font-weight: 700; color: #0f172a; }
+  .fix-body { padding: 24px; }
+
+  .problem-box {
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    font-size: 14px;
+  }
+  .fix-card.critical .problem-box { background: var(--critical-bg); border-left: 4px solid var(--critical); }
+  .fix-card.high     .problem-box { background: var(--high-bg);     border-left: 4px solid var(--high); }
+  .fix-card.medium   .problem-box { background: var(--medium-bg);   border-left: 4px solid var(--medium); }
+  .fix-card.low      .problem-box { background: var(--low-bg);      border-left: 4px solid var(--low); }
+
+  .problem-box .label {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.08em; margin-bottom: 6px;
+  }
+  .fix-card.critical .problem-box .label { color: var(--critical); }
+  .fix-card.high     .problem-box .label { color: var(--high); }
+  .fix-card.medium   .problem-box .label { color: var(--medium); }
+  .fix-card.low      .problem-box .label { color: var(--low); }
+
+  .why-box {
+    background: #f8fafc; border-radius: 8px;
+    padding: 12px 16px; margin-bottom: 20px;
+    font-size: 13.5px; color: #475569;
+    border: 1px solid #e2e8f0;
+  }
+  .why-box strong { color: #1e293b; }
+
+  /* ── Steps ────────────────────────────────────────────────────── */
+  .steps { counter-reset: step; }
+  .step {
+    display: flex; gap: 14px;
+    margin-bottom: 14px; align-items: flex-start;
+  }
+  .step::before {
+    counter-increment: step;
+    content: counter(step);
+    min-width: 26px; height: 26px;
+    background: #1e293b; color: #fff;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .step p { font-size: 14px; color: #374151; }
+
+  /* ── Sub-steps ────────────────────────────────────────────────── */
+  .substep-heading {
+    font-size: 13px; font-weight: 700;
+    color: #0f172a; margin: 20px 0 10px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .substep-heading::before {
+    content: ''; display: block;
+    width: 3px; height: 14px;
+    background: #cbd5e1; border-radius: 2px;
+  }
+
+  /* ── Code Blocks ──────────────────────────────────────────────── */
+  .code-wrap {
+    background: var(--code-bg);
+    border-radius: 10px;
+    margin: 14px 0;
+    overflow: hidden;
+  }
+  .code-label {
+    background: #1e293b;
+    padding: 7px 16px;
+    font-size: 11px; font-weight: 600;
+    color: #94a3b8; letter-spacing: 0.05em;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .code-label::before {
+    content: '';
+    display: inline-block; width: 8px; height: 8px;
+    background: #4ade80; border-radius: 50%;
+  }
+  pre {
+    padding: 18px 20px;
+    overflow-x: auto;
+    font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+    font-size: 13px;
+    line-height: 1.65;
+    color: var(--code-text);
+  }
+  /* Simple syntax colouring via CSS */
+  .kw  { color: #c084fc; } /* keywords */
+  .fn  { color: #60a5fa; } /* functions */
+  .st  { color: #86efac; } /* strings */
+  .cm  { color: #475569; font-style: italic; } /* comments */
+  .nb  { color: #fbbf24; } /* numbers */
+
+  /* ── Expected output box ──────────────────────────────────────── */
+  .expected {
+    background: #0f2810;
+    border: 1px solid #166534;
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-family: 'Cascadia Code', 'Consolas', monospace;
+    font-size: 12.5px; color: #86efac;
+    margin: 10px 0;
+  }
+  .expected .exp-label {
+    font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    color: #4ade80; margin-bottom: 6px;
+    font-family: 'Segoe UI', sans-serif;
+  }
+
+  /* ── Inline code ──────────────────────────────────────────────── */
+  code {
+    background: #f1f5f9; padding: 2px 6px;
+    border-radius: 4px; font-size: 12.5px;
+    font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+    color: #0f172a;
+  }
+
+  /* ── Info callout ─────────────────────────────────────────────── */
+  .callout {
+    background: #eff6ff; border-left: 4px solid #3b82f6;
+    border-radius: 0 8px 8px 0;
+    padding: 12px 16px; margin: 14px 0;
+    font-size: 13.5px; color: #1e40af;
+  }
+
+  /* ── Ablation table ───────────────────────────────────────────── */
+  .model-table {
+    width: 100%; border-collapse: collapse;
+    font-size: 13px; margin: 14px 0;
+  }
+  .model-table th {
+    background: #1e293b; color: #e2e8f0;
+    padding: 10px 14px; text-align: left;
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .model-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid #f1f5f9;
+  }
+  .model-table tr:nth-child(even) td { background: #f8fafc; }
+
+  /* ── Implementation order ─────────────────────────────────────── */
+  .order-flow {
+    display: flex; flex-wrap: wrap; gap: 10px;
+    align-items: center; margin: 16px 0;
+  }
+  .order-step {
+    background: #1e293b; color: #e2e8f0;
+    padding: 8px 14px; border-radius: 8px;
+    font-size: 13px; font-weight: 600;
+  }
+  .order-step span { color: #94a3b8; font-weight: 400; font-size: 11px; display: block; }
+  .order-arrow { color: #94a3b8; font-size: 18px; }
+
+  /* ── Checklist ────────────────────────────────────────────────── */
+  .checklist {
+    list-style: none;
+    background: #fff;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .checklist li {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 13px 20px;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  .checklist li:last-child { border-bottom: none; }
+  .checklist li:hover { background: #f8fafc; }
+  .checklist li input[type=checkbox] {
+    margin-top: 3px; width: 16px; height: 16px;
+    accent-color: #16a34a; cursor: pointer; flex-shrink: 0;
+  }
+  .checklist li label { cursor: pointer; }
+  .checklist li input:checked + label { text-decoration: line-through; color: #94a3b8; }
+
+  /* ── Section scroll target padding ───────────────────────────── */
+  section[id] { scroll-margin-top: calc(var(--header-h) + 20px); }
+
+  /* ── Responsive ───────────────────────────────────────────────── */
+  @media (max-width: 768px) {
+    .sidebar { display: none; }
+    .main { margin-left: 0; padding: 24px 20px 60px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── Top Header ───────────────────────────────────────────────── -->
+<header class="top-header">
+  <span class="shield">🛡️</span>
+  <h1>Image Forgery Detector
+    <span>Remediation &amp; Enhancement Plan — PGD Student Project</span>
+  </h1>
+  <span class="tag">10 Issues · 4 Severity Levels</span>
+</header>
+
+<!-- ── Sidebar ──────────────────────────────────────────────────── -->
+<nav class="sidebar">
+  <div class="sidebar-section">Overview</div>
+  <a href="#summary">Issue Summary</a>
+  <a href="#order">Implementation Order</a>
+  <a href="#done">Definition of Done</a>
+
+  <div class="sidebar-section">Critical Fixes</div>
+  <a href="#fix1"><span class="badge critical">C</span> Fix 1 — run_training()</a>
+  <a href="#fix2"><span class="badge critical">C</span> Fix 2 — Real Dataset</a>
+
+  <div class="sidebar-section">High Priority</div>
+  <a href="#fix3"><span class="badge high">H</span> Fix 3 — Notebook Order</a>
+  <a href="#fix4"><span class="badge high">H</span> Fix 4 — Eval Metrics</a>
+  <a href="#fix5"><span class="badge high">H</span> Fix 5 — Ablation Study</a>
+
+  <div class="sidebar-section">Medium Priority</div>
+  <a href="#fix6"><span class="badge medium">M</span> Fix 6 — train.py Parity</a>
+  <a href="#fix7"><span class="badge medium">M</span> Fix 7 — Project Report</a>
+  <a href="#fix8"><span class="badge medium">M</span> Fix 8 — Literature</a>
+
+  <div class="sidebar-section">Low Priority</div>
+  <a href="#fix9"><span class="badge low">L</span> Fix 9 — Grad-CAM</a>
+  <a href="#fix10"><span class="badge low">L</span> Fix 10 — README</a>
+</nav>
+
+<!-- ── Main ─────────────────────────────────────────────────────── -->
+<main class="main">
+
+  <!-- Hero -->
+  <div class="hero">
+    <h2>Remediation &amp; Enhancement Plan</h2>
+    <p>Every gap found during validation, with step-by-step actions to fix each one.
+       Work through fixes <strong>in priority order</strong> — later fixes depend on earlier ones.</p>
+    <div class="stats">
+      <div class="stat c"><div class="n">2</div><div class="l">Critical</div></div>
+      <div class="stat h"><div class="n">3</div><div class="l">High</div></div>
+      <div class="stat m"><div class="n">3</div><div class="l">Medium</div></div>
+      <div class="stat lo"><div class="n">2</div><div class="l">Low</div></div>
+    </div>
+  </div>
+
+  <!-- Issue Summary -->
+  <section id="summary">
+    <h2 style="font-size:20px;font-weight:800;margin-bottom:16px;color:#0f172a;">Quick Reference: All Issues</h2>
+    <table class="summary-table">
+      <thead>
+        <tr>
+          <th>#</th><th>Severity</th><th>Issue</th><th>Files Affected</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="num-badge">1</span></td>
+          <td><span class="badge critical">CRITICAL</span></td>
+          <td><code>run_training()</code> never defined in notebook</td>
+          <td><code>.ipynb</code></td>
+        </tr>
+        <tr>
+          <td><span class="num-badge">2</span></td>
+          <td><span class="badge critical">CRITICAL</span></td>
+          <td>Synthetic toy data — model learns nothing real</td>
+          <td><code>.ipynb</code>, <code>train.py</code></td>
+        </tr>
+        <tr>
+          <td><span class="num-badge">3</span></td>
+          <td><span class="badge high">HIGH</span></td>
+          <td>Notebook section order is broken (§9 → §7 → §8)</td>
+          <td><code>.ipynb</code></td>
+        </tr>
+        <tr>
+          <td><span class="num-badge">4</span></td>
+          <td><span class="badge high">HIGH</span></td>
+          <td>No meaningful evaluation metrics (only accuracy)</td>
+          <td><code>.ipynb</code></td>
+        </tr>
+        <tr>
+          <td><span class="num-badge">5</span></td>
+          <td><span class="badge high">HIGH</span></td>
+          <td>Ablation study conclusion is invalid (all 100%)</td>
+          <td><code>.ipynb</code></td>
+        </tr>
+        <tr>
+          <td><span class="num-badge">6</span></td>
+          <td><span class="badge medium">MEDIUM</span></td>
+          <td><code>train.py</code> only trains M3, not M1/M2</td>
+          <td><code>train.py</code></td>
+        </tr>
+        <tr>
+          <td><span class="num-badge">7</span></td>
+          <td><span class="badge medium">MEDIUM</span></td>
+          <td>Project report document missing from repo</td>
+          <td><code>Documents/</code></td>
+        </tr>
+        <tr>
+          <td><span class="num-badge">8</span></td>
+          <td><span class="badge medium">MEDIUM</span></td>
+          <td>No literature comparison or baseline results</td>
+          <td><code>.ipynb</code></td>
+        </tr>
+        <tr>
+          <td><span class="num-badge">9</span></td>
+          <td><span class="badge low">LOW</span></td>
+          <td><code>get_gradcam()</code> in app.py is simplified vs notebook</td>
+          <td><code>app.py</code></td>
+        </tr>
+        <tr>
+          <td><span class="num-badge">10</span></td>
+          <td><span class="badge low">LOW</span></td>
+          <td>Gradio vs Streamlit discrepancy not documented</td>
+          <td><code>README.md</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ═══════════════════════════ CRITICAL ═════════════════════════ -->
+  <div class="section-header">
+    <span class="pill critical">Critical Fixes</span>
+    <hr>
+  </div>
+
+  <!-- Fix 1 -->
+  <section id="fix1">
+    <div class="fix-card critical">
+      <div class="fix-header">
+        <div class="fix-num">1</div>
+        <div class="fix-title">Add the Missing <code>run_training()</code> Function to the Notebook</div>
+      </div>
+      <div class="fix-body">
+        <div class="problem-box">
+          <div class="label">Problem</div>
+          Cell 16 calls <code>run_training('M1', ...)</code>, <code>run_training('M2', ...)</code>, and <code>run_training('M3', ...)</code>
+          but this function is <strong>never defined</strong> in any visible cell. The notebook cannot be run
+          end-to-end — an examiner will get a <code>NameError</code> immediately.
+        </div>
+        <div class="why-box">
+          <strong>Why it matters:</strong> A Colab notebook is expected to be fully self-contained.
+          Every function called must be defined above its call site.
+        </div>
+
+        <div class="steps">
+          <div class="step"><p>Open <code>Image_Forgery_Detection_Colab_1.ipynb</code> in Google Colab.</p></div>
+          <div class="step"><p>Insert a new code cell <strong>between the <code>build_model()</code> cell and the ablation execution cell</strong> (between current cell-9 and cell-16).</p></div>
+          <div class="step"><p>Paste the following function into that new cell:</p></div>
+        </div>
+
+        <div class="code-wrap">
+          <div class="code-label">Python — run_training() definition</div>
+          <pre><span class="kw">def</span> <span class="fn">run_training</span>(model_type, train_ds_base, val_ds_base, n_train, n_val):
+    <span class="fn">print</span>(<span class="st">f"\n{'='*55}"</span>)
+    <span class="fn">print</span>(<span class="st">f"Training {model_type}"</span>)
+    <span class="fn">print</span>(<span class="st">f"{'='*55}"</span>)
+
+    train_ds = <span class="fn">adapt_dataset_for_model</span>(train_ds_base, model_type)
+    val_ds   = <span class="fn">adapt_dataset_for_model</span>(val_ds_base,   model_type)
+
+    model = <span class="fn">build_model</span>(model_type)
+    model.<span class="fn">compile</span>(
+        optimizer=<span class="st">'adam'</span>,
+        loss=<span class="st">'binary_crossentropy'</span>,
+        metrics=[<span class="st">'accuracy'</span>]
+    )
+
+    steps_per_epoch  = <span class="fn">max</span>(<span class="nb">1</span>, <span class="fn">int</span>(np.<span class="fn">ceil</span>(n_train / BATCH_SIZE)))
+    validation_steps = <span class="fn">max</span>(<span class="nb">1</span>, <span class="fn">int</span>(np.<span class="fn">ceil</span>(n_val   / BATCH_SIZE)))
+
+    history = model.<span class="fn">fit</span>(
+        train_ds,
+        validation_data=val_ds,
+        epochs=EPOCHS,
+        steps_per_epoch=steps_per_epoch,
+        validation_steps=validation_steps,
+        verbose=<span class="nb">1</span>,
+    )
+
+    save_path = <span class="st">f"{model_type}_best.keras"</span>
+    model.<span class="fn">save</span>(save_path)
+    <span class="fn">print</span>(<span class="st">f"✔ {model_type} saved → {save_path}"</span>)
+    <span class="kw">return</span> model, history</pre>
+        </div>
+
+        <div class="steps">
+          <div class="step"><p>Run all cells from top to bottom to confirm there are no errors.</p></div>
+          <div class="step"><p>Confirm the output shows three training runs (M1, M2, M3) completing with no <code>NameError</code>.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Fix 2 -->
+  <section id="fix2">
+    <div class="fix-card critical">
+      <div class="fix-header">
+        <div class="fix-num">2</div>
+        <div class="fix-title">Replace Synthetic Toy Data with Real CASIA v2</div>
+      </div>
+      <div class="fix-body">
+        <div class="problem-box">
+          <div class="label">Problem</div>
+          Current dataset: <strong>Authentic</strong> = random noise (RGB 100–200) |
+          <strong>Forged</strong> = same noise + a solid red rectangle at [50–150, 50–150].
+          The model learns "red rectangle = forged" and gets 100% accuracy — this has
+          <strong>no relationship to real image forgery detection</strong>.
+        </div>
+        <div class="why-box">
+          <strong>Why it matters:</strong> An examiner will immediately recognise that 100% accuracy on
+          120 synthetic noise images is not a valid result. It is the single biggest weakness in the submission.
+        </div>
+
+        <div class="substep-heading">Step 2a — Download CASIA v2</div>
+        <div class="steps">
+          <div class="step"><p>Go to <strong>Kaggle</strong> and search for <em>"CASIA v2 image forgery"</em> or <em>"CASIA 2.0 dataset"</em>.</p></div>
+          <div class="step"><p>Download the dataset (~3.3 GB). It contains ~12,614 authentic images (<code>Au_*</code>) and ~5,123 tampered images (<code>Tp_*</code>).</p></div>
+          <div class="step"><p>Upload the extracted folder to your <strong>Google Drive</strong> and name it <code>casia_v2/</code>.</p></div>
+        </div>
+
+        <div class="substep-heading">Step 2b — Mount Drive and Update Data Path</div>
+        <div class="steps">
+          <div class="step"><p>Add this cell at the top of the data section in the notebook:</p></div>
+        </div>
+        <div class="code-wrap">
+          <div class="code-label">Python — Mount Google Drive</div>
+          <pre><span class="kw">from</span> google.colab <span class="kw">import</span> drive
+drive.<span class="fn">mount</span>(<span class="st">'/content/drive'</span>)
+
+TARGET_DIR = <span class="st">"/content/drive/MyDrive/casia_v2"</span>  <span class="cm"># adjust if needed</span></pre>
+        </div>
+        <div class="steps">
+          <div class="step"><p>Comment out or remove the call to <code>generate_robust_dataset()</code> — synthetic data is no longer needed.</p></div>
+          <div class="step"><p>Run <code>split_dataset(TARGET_DIR)</code> directly on the real data path.</p></div>
+        </div>
+
+        <div class="substep-heading">Step 2c — Verify the Split</div>
+        <div class="code-wrap">
+          <div class="code-label">Python — Verify split counts and label balance</div>
+          <pre>splits = <span class="fn">split_dataset</span>(TARGET_DIR)
+<span class="fn">print</span>(<span class="st">f"Train: {len(splits['train'])} | Val: {len(splits['val'])} | Test: {len(splits['test'])}"</span>)
+
+<span class="kw">for</span> split_name, paths <span class="kw">in</span> splits.items():
+    authentic = <span class="fn">sum</span>(<span class="nb">1</span> <span class="kw">for</span> p <span class="kw">in</span> paths <span class="kw">if</span> os.path.<span class="fn">basename</span>(p).<span class="fn">startswith</span>(<span class="st">'Au_'</span>))
+    forged    = <span class="fn">sum</span>(<span class="nb">1</span> <span class="kw">for</span> p <span class="kw">in</span> paths <span class="kw">if</span> os.path.<span class="fn">basename</span>(p).<span class="fn">startswith</span>(<span class="st">'Tp_'</span>))
+    <span class="fn">print</span>(<span class="st">f"{split_name}: {authentic} authentic, {forged} forged"</span>)</pre>
+        </div>
+        <div class="expected">
+          <div class="exp-label">Expected Output (approximate)</div>
+Train: ~14000 | Val: ~1700 | Test: ~1700
+train:  ~10000 authentic, ~4000 forged
+        </div>
+
+        <div class="substep-heading">Step 2d — Handle Class Imbalance</div>
+        <div class="callout">
+          CASIA v2 has ~2.5× more authentic than tampered images. Without class weights,
+          the model will bias toward predicting "authentic" and appear to have high accuracy while missing most forgeries.
+        </div>
+        <div class="code-wrap">
+          <div class="code-label">Python — Compute class weights</div>
+          <pre><span class="kw">from</span> sklearn.utils.class_weight <span class="kw">import</span> compute_class_weight
+
+classes = np.<span class="fn">unique</span>(train_labels)
+weights = <span class="fn">compute_class_weight</span>(<span class="st">'balanced'</span>, classes=classes, y=train_labels)
+class_weight_dict = <span class="fn">dict</span>(<span class="fn">zip</span>(classes, weights))
+<span class="fn">print</span>(<span class="st">"Class weights:"</span>, class_weight_dict)
+<span class="cm"># Then pass class_weight=class_weight_dict to model.fit()</span></pre>
+        </div>
+
+        <div class="substep-heading">Step 2e — Retrain and Save</div>
+        <div class="steps">
+          <div class="step"><p>Run training. Expect accuracy in the range <strong>80–92%</strong> (not 100%). If above 95%, check for data leakage. If below 70%, increase <code>EPOCHS</code> to 10–15.</p></div>
+          <div class="step"><p>Download the trained model from Colab:</p></div>
+        </div>
+        <div class="code-wrap">
+          <div class="code-label">Python — Download model from Colab</div>
+          <pre><span class="kw">from</span> google.colab <span class="kw">import</span> files
+files.<span class="fn">download</span>(<span class="st">'M3_best.keras'</span>)</pre>
+        </div>
+        <div class="steps">
+          <div class="step"><p>Replace the existing <code>M3_best.keras</code> in the repo. Git LFS will handle the large file upload automatically on the next commit.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════ HIGH ═════════════════════════════ -->
+  <div class="section-header">
+    <span class="pill high">High Priority</span>
+    <hr>
+  </div>
+
+  <!-- Fix 3 -->
+  <section id="fix3">
+    <div class="fix-card high">
+      <div class="fix-header">
+        <div class="fix-num">3</div>
+        <div class="fix-title">Reorder Notebook Sections</div>
+      </div>
+      <div class="fix-body">
+        <div class="problem-box">
+          <div class="label">Problem</div>
+          Section headings appear in the wrong order: <strong>§9</strong> (Execute) appears before
+          <strong>§7</strong> (Explainability) and <strong>§8</strong> (Interface). The notebook is
+          hard to follow and looks unpolished for submission.
+        </div>
+        <div class="steps">
+          <div class="step"><p>Open the notebook in Colab and rearrange cells into this order:</p></div>
+        </div>
+        <table class="model-table" style="margin:14px 0;">
+          <thead><tr><th>Section</th><th>Content</th></tr></thead>
+          <tbody>
+            <tr><td>§1</td><td>Setup &amp; Dependencies</td></tr>
+            <tr><td>§2</td><td>Synthetic Dataset Generation <em>(mark as optional — replaced by real data)</em></td></tr>
+            <tr><td>§3</td><td>ELA Utility (<code>compute_ela</code>)</td></tr>
+            <tr><td>§4</td><td>Data Pipeline (CASIAParser, split, preload, make_dataset)</td></tr>
+            <tr><td>§5</td><td>Model Architecture (get_rgb_branch, get_ela_branch, build_model)</td></tr>
+            <tr><td>§6</td><td>Training Engine (<code>run_training</code> — added in Fix 1)</td></tr>
+            <tr><td>§7</td><td>Explainability (<code>get_gradcam</code>)</td></tr>
+            <tr><td>§8</td><td>Interactive Interface (Gradio demo)</td></tr>
+            <tr><td>§9</td><td>Execute: 3-Way Ablation Study</td></tr>
+            <tr><td>§10</td><td>Results &amp; Evaluation <em>(new — see Fix 4)</em></td></tr>
+          </tbody>
+        </table>
+        <div class="steps">
+          <div class="step"><p>Renumber all section headings to match the table above.</p></div>
+          <div class="step"><p>Run all cells again top-to-bottom to confirm no execution errors.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Fix 4 -->
+  <section id="fix4">
+    <div class="fix-card high">
+      <div class="fix-header">
+        <div class="fix-num">4</div>
+        <div class="fix-title">Add Proper Evaluation Metrics</div>
+      </div>
+      <div class="fix-body">
+        <div class="problem-box">
+          <div class="label">Problem</div>
+          Only <code>accuracy</code> is reported. On an imbalanced dataset like CASIA v2,
+          a model that always predicts "authentic" achieves ~71% accuracy while being completely useless.
+          Accuracy alone is not sufficient for a forensics task.
+        </div>
+        <div class="steps">
+          <div class="step"><p>After the training cell (§9), add a new section <strong>§10 Results &amp; Evaluation</strong>.</p></div>
+          <div class="step"><p>Add this evaluation code to generate a classification report and confusion matrix:</p></div>
+        </div>
+        <div class="code-wrap">
+          <div class="code-label">Python — Classification report + confusion matrix</div>
+          <pre><span class="kw">from</span> sklearn.metrics <span class="kw">import</span> (
+    confusion_matrix, classification_report,
+    roc_auc_score, RocCurveDisplay
+)
+<span class="kw">import</span> matplotlib.pyplot <span class="kw">as</span> plt
+<span class="kw">import</span> seaborn <span class="kw">as</span> sns
+
+test_ds_m3 = <span class="fn">adapt_dataset_for_model</span>(
+    <span class="fn">make_dataset</span>(test_rgb, test_ela, test_labels, repeat=<span class="kw">False</span>), <span class="st">'M3'</span>
+)
+y_pred_prob = model_m3.<span class="fn">predict</span>(test_ds_m3, verbose=<span class="nb">0</span>).<span class="fn">flatten</span>()
+y_pred = (y_pred_prob > <span class="nb">0.5</span>).astype(<span class="fn">int</span>)
+y_true = test_labels
+
+<span class="fn">print</span>(<span class="st">"="*50</span>)
+<span class="fn">print</span>(<span class="st">"M3 (Fused) — Classification Report"</span>)
+<span class="fn">print</span>(<span class="st">"="*50</span>)
+<span class="fn">print</span>(<span class="fn">classification_report</span>(y_true, y_pred,
+      target_names=[<span class="st">'Authentic'</span>, <span class="st">'Forged'</span>]))
+
+cm = <span class="fn">confusion_matrix</span>(y_true, y_pred)
+fig, ax = plt.<span class="fn">subplots</span>(figsize=(<span class="nb">5</span>, <span class="nb">4</span>))
+sns.<span class="fn">heatmap</span>(cm, annot=<span class="kw">True</span>, fmt=<span class="st">'d'</span>, cmap=<span class="st">'Blues'</span>,
+            xticklabels=[<span class="st">'Authentic'</span>, <span class="st">'Forged'</span>],
+            yticklabels=[<span class="st">'Authentic'</span>, <span class="st">'Forged'</span>])
+ax.<span class="fn">set_xlabel</span>(<span class="st">'Predicted'</span>); ax.<span class="fn">set_ylabel</span>(<span class="st">'Actual'</span>)
+ax.<span class="fn">set_title</span>(<span class="st">'M3 Confusion Matrix'</span>)
+plt.<span class="fn">savefig</span>(<span class="st">'confusion_matrix_m3.png'</span>, dpi=<span class="nb">150</span>)
+plt.<span class="fn">show</span>()
+
+auc = <span class="fn">roc_auc_score</span>(y_true, y_pred_prob)
+<span class="fn">print</span>(<span class="st">f"ROC-AUC Score: {auc:.4f}"</span>)
+<span class="fn">RocCurveDisplay</span>.<span class="fn">from_predictions</span>(y_true, y_pred_prob)
+plt.<span class="fn">title</span>(<span class="st">"M3 ROC Curve"</span>)
+plt.<span class="fn">savefig</span>(<span class="st">'roc_curve_m3.png'</span>, dpi=<span class="nb">150</span>)
+plt.<span class="fn">show</span>()</pre>
+        </div>
+        <div class="steps">
+          <div class="step"><p>Add the model comparison table across all three variants:</p></div>
+        </div>
+        <div class="code-wrap">
+          <div class="code-label">Python — M1 vs M2 vs M3 metrics table</div>
+          <pre>results = {}
+<span class="kw">for</span> name, model, m_type <span class="kw">in</span> [(<span class="st">"M1_RGB"</span>, model_m1, <span class="st">'M1'</span>),
+                              (<span class="st">"M2_ELA"</span>, model_m2, <span class="st">'M2'</span>),
+                              (<span class="st">"M3_Fused"</span>, model_m3, <span class="st">'M3'</span>)]:
+    ds = <span class="fn">adapt_dataset_for_model</span>(
+        <span class="fn">make_dataset</span>(test_rgb, test_ela, test_labels, repeat=<span class="kw">False</span>), m_type)
+    probs = model.<span class="fn">predict</span>(ds, verbose=<span class="nb">0</span>).<span class="fn">flatten</span>()
+    preds = (probs > <span class="nb">0.5</span>).astype(<span class="fn">int</span>)
+    <span class="kw">from</span> sklearn.metrics <span class="kw">import</span> f1_score, precision_score, recall_score
+    results[name] = {
+        <span class="st">'Accuracy'</span>:  np.<span class="fn">mean</span>(preds == test_labels),
+        <span class="st">'Precision'</span>: <span class="fn">precision_score</span>(test_labels, preds, zero_division=<span class="nb">0</span>),
+        <span class="st">'Recall'</span>:    <span class="fn">recall_score</span>(test_labels, preds, zero_division=<span class="nb">0</span>),
+        <span class="st">'F1'</span>:        <span class="fn">f1_score</span>(test_labels, preds, zero_division=<span class="nb">0</span>),
+        <span class="st">'AUC'</span>:       <span class="fn">roc_auc_score</span>(test_labels, probs),
+    }
+
+<span class="kw">import</span> pandas <span class="kw">as</span> pd
+df_results = pd.<span class="fn">DataFrame</span>(results).T
+<span class="fn">print</span>(<span class="st">"\nAblation Study Results"</span>)
+<span class="fn">print</span>(df_results.<span class="fn">to_string</span>(float_format=<span class="st">"{:.4f}"</span>.<span class="fn">format</span>))</pre>
+        </div>
+        <div class="steps">
+          <div class="step"><p>Save <code>confusion_matrix_m3.png</code> and <code>roc_curve_m3.png</code> and include them in the project report.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Fix 5 -->
+  <section id="fix5">
+    <div class="fix-card high">
+      <div class="fix-header">
+        <div class="fix-num">5</div>
+        <div class="fix-title">Make the Ablation Study Meaningful</div>
+      </div>
+      <div class="fix-body">
+        <div class="problem-box">
+          <div class="label">Problem</div>
+          With synthetic data, M1=M2=M3=100% — the ablation proves nothing.
+          With real CASIA v2, the three models will produce genuinely different results.
+          <strong>Depends on Fix 2 and Fix 4 being completed first.</strong>
+        </div>
+        <div class="steps">
+          <div class="step">
+            <p>After real-data training, expect results similar to this pattern:</p>
+          </div>
+        </div>
+        <table class="model-table">
+          <thead><tr><th>Model</th><th>Input</th><th>Expected Accuracy</th><th>Strength</th><th>Weakness</th></tr></thead>
+          <tbody>
+            <tr><td>M1 (RGB)</td><td>Original image</td><td>~75–85%</td><td>Semantic inconsistencies</td><td>Misses compression artifacts</td></tr>
+            <tr><td>M2 (ELA)</td><td>ELA residuals</td><td>~70–80%</td><td>Compression tampering</td><td>Misses structural forgeries</td></tr>
+            <tr><td><strong>M3 (Fused)</strong></td><td>Both</td><td><strong>~85–92%</strong></td><td>Combines both signals</td><td>Slightly slower inference</td></tr>
+          </tbody>
+        </table>
+        <div class="steps">
+          <div class="step"><p>The comparison table from Fix 4 is your ablation study table — no separate code needed.</p></div>
+          <div class="step"><p>Add a markdown cell before the results table explaining why fusion outperforms single-branch models. Use the table above as a guide.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════ MEDIUM ═══════════════════════════ -->
+  <div class="section-header">
+    <span class="pill medium">Medium Priority</span>
+    <hr>
+  </div>
+
+  <!-- Fix 6 -->
+  <section id="fix6">
+    <div class="fix-card medium">
+      <div class="fix-header">
+        <div class="fix-num">6</div>
+        <div class="fix-title">Update <code>train.py</code> to Match the Notebook</div>
+      </div>
+      <div class="fix-body">
+        <div class="problem-box">
+          <div class="label">Problem</div>
+          <code>train.py</code> only builds and trains M3. It is missing <code>adapt_dataset_for_model()</code>,
+          <code>run_training()</code>, and M1/M2 variants — all of which exist in the notebook.
+        </div>
+        <div class="steps">
+          <div class="step"><p>Add <code>adapt_dataset_for_model()</code> from the notebook to <code>train.py</code>.</p></div>
+          <div class="step"><p>Add <code>run_training()</code> (same as Fix 1) to <code>train.py</code>.</p></div>
+          <div class="step"><p>Update <code>build_model()</code> to accept a <code>model_type</code> parameter (<code>'M1'</code>, <code>'M2'</code>, <code>'M3'</code>) matching the notebook version.</p></div>
+          <div class="step"><p>Update the <code>if __name__ == "__main__":</code> block to train all three models and print the ablation comparison table.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Fix 7 -->
+  <section id="fix7">
+    <div class="fix-card medium">
+      <div class="fix-header">
+        <div class="fix-num">7</div>
+        <div class="fix-title">Add the Project Report to the Repository</div>
+      </div>
+      <div class="fix-body">
+        <div class="problem-box">
+          <div class="label">Problem</div>
+          <code>README.md</code> references
+          <code>Documents/Project_Report_Digital_Image_Forgery_Detector.docx</code>
+          but neither the file nor the <code>Documents/</code> folder exist in the repo.
+        </div>
+        <div class="steps">
+          <div class="step"><p>Create the <code>Documents/</code> folder in the repo root.</p></div>
+          <div class="step"><p>Place the project report <code>.docx</code> file inside it.</p></div>
+          <div class="step"><p>Run <code>git add Documents/</code> and commit.</p></div>
+        </div>
+        <div class="callout">
+          If the report does not yet exist, remove the reference from <code>README.md</code>
+          until it is ready — a broken link is worse than no link.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Fix 8 -->
+  <section id="fix8">
+    <div class="fix-card medium">
+      <div class="fix-header">
+        <div class="fix-num">8</div>
+        <div class="fix-title">Add a Literature Comparison Section</div>
+      </div>
+      <div class="fix-body">
+        <div class="problem-box">
+          <div class="label">Problem</div>
+          The notebook does not reference any published results on CASIA v2,
+          making it impossible for an examiner to judge whether the results are competitive.
+        </div>
+        <div class="steps">
+          <div class="step"><p>After the results table (§10), add a markdown cell titled <strong>"Comparison with Published Baselines"</strong>.</p></div>
+          <div class="step"><p>Use this template (fill in your actual results after Fix 2 is done):</p></div>
+        </div>
+        <table class="model-table">
+          <thead><tr><th>Method</th><th>Accuracy</th><th>F1</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td>Rao et al. (2016) — CNN on SRM features</td><td>82.2%</td><td>—</td><td>Single-branch</td></tr>
+            <tr><td>Salloum et al. (2018) — FCN</td><td>89.3%</td><td>—</td><td>Pixel-level</td></tr>
+            <tr><td><strong>Our M1 (RGB only)</strong></td><td><em>your result</em></td><td><em>your result</em></td><td>ResNet50</td></tr>
+            <tr><td><strong>Our M2 (ELA only)</strong></td><td><em>your result</em></td><td><em>your result</em></td><td>Custom CNN</td></tr>
+            <tr><td><strong>Our M3 (Fused)</strong></td><td><em>your result</em></td><td><em>your result</em></td><td>Dual-branch</td></tr>
+          </tbody>
+        </table>
+        <div class="steps">
+          <div class="step"><p>Add 2–3 sentences commenting on whether M3 is competitive and why it may be higher or lower than the baselines.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════ LOW ══════════════════════════════ -->
+  <div class="section-header">
+    <span class="pill low">Low Priority</span>
+    <hr>
+  </div>
+
+  <!-- Fix 9 -->
+  <section id="fix9">
+    <div class="fix-card low">
+      <div class="fix-header">
+        <div class="fix-num">9</div>
+        <div class="fix-title">Align <code>get_gradcam()</code> in <code>app.py</code> with the Notebook</div>
+      </div>
+      <div class="fix-body">
+        <div class="problem-box">
+          <div class="label">Problem</div>
+          The notebook's <code>get_gradcam()</code> uses a <code>model_type</code> parameter to pick
+          the correct last conv layer per model variant. The <code>app.py</code> version only searches
+          for <code>conv2d</code> named layers — if the model is updated it could silently pick the wrong layer.
+        </div>
+        <div class="steps">
+          <div class="step"><p>In <code>app.py</code>, replace the current <code>get_gradcam()</code> with the more robust version from the notebook.</p></div>
+          <div class="step"><p>Since <code>app.py</code> only runs M3, hard-code the call as:</p></div>
+        </div>
+        <div class="code-wrap">
+          <div class="code-label">Python — Updated call in app.py</div>
+          <pre>heatmap = <span class="fn">get_gradcam</span>(m3, input_data, model_type=<span class="st">'M3'</span>)</pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Fix 10 -->
+  <section id="fix10">
+    <div class="fix-card low">
+      <div class="fix-header">
+        <div class="fix-num">10</div>
+        <div class="fix-title">Document the Gradio → Streamlit Difference in README</div>
+      </div>
+      <div class="fix-body">
+        <div class="problem-box">
+          <div class="label">Problem</div>
+          The notebook uses <strong>Gradio</strong> (Colab-native); the deployed app uses
+          <strong>Streamlit</strong> (Hugging Face Spaces). This intentional difference
+          is not explained anywhere and may confuse an examiner.
+        </div>
+        <div class="steps">
+          <div class="step"><p>Add the following section to <code>README.md</code>:</p></div>
+        </div>
+        <div class="code-wrap">
+          <div class="code-label">Markdown — README.md addition</div>
+          <pre>## Development vs Deployment UI
+
+The Colab notebook uses **Gradio** for its interactive demo because Gradio
+works natively within Colab with a public share link.
+The deployed Hugging Face Space uses **Streamlit** because it is the SDK
+configured in the Space settings.
+Both interfaces implement identical inference logic.</pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═════════════════════ Implementation Order ═══════════════════ -->
+  <section id="order" style="margin-top:48px;">
+    <h2 style="font-size:20px;font-weight:800;margin-bottom:16px;color:#0f172a;">Recommended Implementation Order</h2>
+    <p style="color:#64748b;font-size:14px;margin-bottom:20px;">Work through the fixes in this order to avoid rework — later fixes depend on earlier ones.</p>
+    <div class="order-flow">
+      <div class="order-step">Fix 2a–b <span>Download CASIA v2</span></div>
+      <span class="order-arrow">→</span>
+      <div class="order-step">Fix 1 <span>run_training()</span></div>
+      <span class="order-arrow">→</span>
+      <div class="order-step">Fix 3 <span>Reorder notebook</span></div>
+      <span class="order-arrow">→</span>
+      <div class="order-step">Fix 2c–e <span>Retrain on real data</span></div>
+      <span class="order-arrow">→</span>
+      <div class="order-step">Fix 4 <span>Eval metrics</span></div>
+      <span class="order-arrow">→</span>
+      <div class="order-step">Fix 5 <span>Ablation write-up</span></div>
+      <span class="order-arrow">→</span>
+      <div class="order-step">Fix 6 <span>train.py parity</span></div>
+      <span class="order-arrow">→</span>
+      <div class="order-step">Fix 7 <span>Project report</span></div>
+      <span class="order-arrow">→</span>
+      <div class="order-step">Fix 8 <span>Literature</span></div>
+      <span class="order-arrow">→</span>
+      <div class="order-step">Fix 9 <span>Grad-CAM</span></div>
+      <span class="order-arrow">→</span>
+      <div class="order-step">Fix 10 <span>README</span></div>
+    </div>
+  </section>
+
+  <!-- ═════════════════════ Definition of Done ═════════════════════ -->
+  <section id="done" style="margin-top:48px;">
+    <h2 style="font-size:20px;font-weight:800;margin-bottom:6px;color:#0f172a;">Definition of Done</h2>
+    <p style="color:#64748b;font-size:14px;margin-bottom:20px;">Tick each item off as you complete it. Submission is ready only when all boxes are checked.</p>
+    <ul class="checklist">
+      <li><input type="checkbox" id="c1"><label for="c1">Notebook runs end-to-end in Colab without errors (no missing functions)</label></li>
+      <li><input type="checkbox" id="c2"><label for="c2">Notebook sections are numbered and ordered correctly (§1 through §10)</label></li>
+      <li><input type="checkbox" id="c3"><label for="c3">Training uses real CASIA v2 data — not synthetic noise</label></li>
+      <li><input type="checkbox" id="c4"><label for="c4">Accuracy is in a realistic range (75–92%) — <strong>not 100%</strong></label></li>
+      <li><input type="checkbox" id="c5"><label for="c5">Class imbalance is handled via class weights in <code>model.fit()</code></label></li>
+      <li><input type="checkbox" id="c6"><label for="c6">Evaluation section includes: confusion matrix, precision, recall, F1, ROC-AUC</label></li>
+      <li><input type="checkbox" id="c7"><label for="c7">Ablation study table compares M1, M2, M3 across all metrics</label></li>
+      <li><input type="checkbox" id="c8"><label for="c8">Literature comparison table present with at least two published baselines</label></li>
+      <li><input type="checkbox" id="c9"><label for="c9"><code>train.py</code> trains all three models (M1, M2, M3)</label></li>
+      <li><input type="checkbox" id="c10"><label for="c10"><code>M3_best.keras</code> in the repo was trained on real CASIA v2 data</label></li>
+      <li><input type="checkbox" id="c11"><label for="c11"><code>Documents/</code> folder contains the project report</label></li>
+      <li><input type="checkbox" id="c12"><label for="c12"><code>README.md</code> explains the Gradio vs Streamlit difference</label></li>
+      <li><input type="checkbox" id="c13"><label for="c13">Hugging Face Space redeployed with the new model weights</label></li>
+    </ul>
+  </section>
+
+</main>
+
+</body>
+</html>
