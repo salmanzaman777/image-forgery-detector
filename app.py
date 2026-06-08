@@ -57,13 +57,45 @@ def get_gradcam(model, input_data):
     heatmap = tf.squeeze(tf.maximum(heatmap, 0) / max_val).numpy()
     return heatmap
 
+def build_model(model_type='M3'):
+    IMG_SIZE = (224, 224)
+    ela_input = layers.Input(shape=(*IMG_SIZE, 3), name='ela_input')
+    x = layers.Conv2D(32,  (3,3), activation='relu', padding='same')(ela_input)
+    x = layers.BatchNormalization()(x)
+    x = layers.MaxPooling2D()(x)
+    x = layers.Conv2D(64,  (3,3), activation='relu', padding='same')(x)
+    x = layers.BatchNormalization()(x)
+    x = layers.MaxPooling2D()(x)
+    x = layers.Conv2D(128, (3,3), activation='relu', padding='same')(x)
+    x = layers.BatchNormalization()(x)
+    x = layers.MaxPooling2D()(x)
+    ela_features = layers.GlobalAveragePooling2D(name='ela_gap')(x)
+
+    rgb_input  = layers.Input(shape=(*IMG_SIZE, 3), name='rgb_input')
+    resnet     = tf.keras.applications.ResNet50(weights='imagenet', include_top=False, input_tensor=rgb_input)
+    for layer in resnet.layers:
+        layer.trainable = False
+    rgb_features = layers.GlobalAveragePooling2D(name='rgb_gap')(resnet.output)
+
+    combined = layers.Concatenate(name='fused')([rgb_features, ela_features])
+    x = layers.Dense(256, activation='relu')(combined)
+    x = layers.Dropout(0.5)(x)
+    output = layers.Dense(1, activation='sigmoid', name='output')(x)
+
+    return tf.keras.Model(inputs=[rgb_input, ela_input], outputs=output, name=model_type)
+
 @st.cache_resource
 def load_trained_model():
     try:
-        return models.load_model('model/M3_best.h5')
-    except Exception as e:
-        st.error(f"Model loading failed: {e}")
-        return None
+        model = build_model('M3')
+        model.load_weights('model/M3_best.h5')
+        return model
+    except:
+        try:
+            return models.load_model('model/M3_best.keras')
+        except Exception as e:
+            st.error(f"Model loading failed: {e}. Please check that model files exist.")
+            return None
 
 # ── Main UI ──────────────────────────────────────────────────────────────────
 st.set_page_config(page_title="Image Forgery Detector", layout="wide")
