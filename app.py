@@ -86,16 +86,20 @@ def build_model(model_type='M3'):
 
 @st.cache_resource
 def load_trained_model():
-    try:
-        model = build_model('M3')
-        model.load_weights('model/M3_best.h5')
-        return model
-    except:
+    import os
+    model_path = 'M3_best.h5'
+
+    if os.path.exists(model_path):
         try:
-            return models.load_model('model/M3_best.keras')
+            model = build_model('M3')
+            model.load_weights(model_path)
+            return model
         except Exception as e:
-            st.error(f"Model loading failed: {e}. Please check that model files exist.")
+            st.error(f"Failed to load model weights: {e}")
             return None
+    else:
+        st.error("Model file not found. Please upload M3_best.h5 to the Space or configure model hosting.")
+        return None
 
 # ── Main UI ──────────────────────────────────────────────────────────────────
 st.set_page_config(page_title="Image Forgery Detector", layout="wide")
