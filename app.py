@@ -3,7 +3,7 @@ import numpy as np
 import tensorflow as tf
 import cv2
 import io
-from PIL import Image, ImageChops
+from PIL import Image, ImageChops, ImageEnhance
 from tensorflow.keras import models
 
 # ── Configuration ────────────────────────────────────────────────────────────
@@ -20,9 +20,7 @@ def compute_ela(original, quality=ELA_QUALITY, scale=ELA_SCALE):
     compressed = Image.open(buf)
 
     ela_image = ImageChops.difference(original, compressed)
-    ela_image = ImageChops.multiply(
-        ela_image, Image.new('RGB', ela_image.size, (scale, scale, scale))
-    )
+    ela_image = ImageEnhance.Brightness(ela_image).enhance(scale)
     return ela_image
 
 def get_gradcam(model, input_data):
@@ -85,19 +83,11 @@ if uploaded_file is not None:
         # Load model
         m3 = load_trained_model()
         
-        # Prepare inputs
-        rgb_in = np.array(image.resize(IMG_SIZE)).astype(np.float32)[np.newaxis, ...]
+        # Prepare inputs — normalize to [0, 1] to match training
+        rgb_in  = np.array(image.resize(IMG_SIZE)).astype(np.float32)[np.newaxis] / 255.0
         ela_img = compute_ela(image)
-        ela_in = np.array(ela_img.resize(IMG_SIZE)).astype(np.float32)[np.newaxis, ...]
-        
-        # Handle input mapping
-        try:
-            if hasattr(m3, 'input_names') and m3.input_names:
-                input_data = {name: tensor for name, tensor in zip(m3.input_names, [rgb_in, ela_in])}
-            else:
-                input_data = [rgb_in, ela_in]
-        except:
-            input_data = [rgb_in, ela_in]
+        ela_in  = np.array(ela_img.resize(IMG_SIZE)).astype(np.float32)[np.newaxis] / 255.0
+        input_data = [rgb_in, ela_in]
             
         # Inference
         pred = m3.predict(input_data, verbose=0)[0][0]
