@@ -77,7 +77,7 @@ if uploaded_file is not None:
     
     col1, col2 = st.columns(2)
     with col1:
-        st.image(image, caption="Original Image", use_container_width=True)
+        st.image(image, caption="Original Image", use_column_width=True)
     
     with st.spinner("Analyzing..."):
         # Load model
@@ -110,7 +110,7 @@ if uploaded_file is not None:
     col3, col4 = st.columns(2)
     with col3:
         st.subheader("ELA Artifacts")
-        st.image(ela_img, caption="Error Level Analysis (JPEG inconsistencies)", use_container_width=True)
+        st.image(ela_img, caption="Error Level Analysis (JPEG inconsistencies)", use_column_width=True)
         st.info("ELA highlights regions with different compression levels, often indicating tampered areas.")
         
     with col4:
@@ -124,7 +124,7 @@ if uploaded_file is not None:
             # Blend
             img_np = np.array(image)
             overlay = np.uint8(heatmap_resized * 0.4 + img_np * 0.6)
-            st.image(overlay, caption="Model Focus Regions", use_container_width=True)
+            st.image(overlay, caption="Model Focus Regions", use_column_width=True)
             st.info("The heatmap shows which parts of the image the model focused on to make its decision.")
         except Exception as e:
             st.error(f"Could not generate Grad-CAM: {e}")
