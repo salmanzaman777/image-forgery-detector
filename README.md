@@ -23,10 +23,11 @@ This application detects tampering in images using a Dual-Branch CNN architectur
 The app uses **Grad-CAM** to visualize which parts of the image the model focused on when making its decision.
 
 ## Deployment:
-This app is designed to be deployed on Hugging Face Spaces using Streamlit.
+🚀 **Live on Hugging Face Spaces:** [image-forgery-detector](https://huggingface.co/spaces/usamaalam/image-forgery-detector)
 
 ## Repository:
-[https://github.com/salmanzaman777/image-forgery-detector](https://github.com/salmanzaman777/image-forgery-detector)
+- **GitHub:** [https://github.com/salmanzaman777/image-forgery-detector](https://github.com/salmanzaman777/image-forgery-detector)
+- **Branch:** `usama` (latest with M3 model trained on CASIA v2)
 
 ## Documents:
 - [Project Report](documents/Project_Report_Digital_Image_Forgery_Detector.docx)
