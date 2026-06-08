@@ -60,11 +60,16 @@ def get_gradcam(model, input_data):
 @st.cache_resource
 def load_trained_model():
     try:
-        return models.load_model('model/M3_best.keras')
-    except Exception as e:
-        st.error(f"Model loading failed: {e}")
-        st.error("Please ensure the model file is compatible with TensorFlow 2.13")
-        return None
+        return models.load_model('model/M3_model')
+    except:
+        try:
+            return models.load_model('model/M3_best.h5')
+        except:
+            try:
+                return models.load_model('model/M3_best.keras')
+            except Exception as e:
+                st.error(f"Model loading failed. Try running the conversion script in Colab.")
+                return None
 
 # ── Main UI ──────────────────────────────────────────────────────────────────
 st.set_page_config(page_title="Image Forgery Detector", layout="wide")
