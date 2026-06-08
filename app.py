@@ -59,7 +59,7 @@ def get_gradcam(model, input_data):
 
 @st.cache_resource
 def load_trained_model():
-    return models.load_model('M3_best.keras')
+    return models.load_model('model/M3_best.keras')
 
 # ── Main UI ──────────────────────────────────────────────────────────────────
 st.set_page_config(page_title="Image Forgery Detector", layout="wide")

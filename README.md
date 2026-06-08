@@ -29,4 +29,4 @@ This app is designed to be deployed on Hugging Face Spaces using Streamlit.
 [https://github.com/salmanzaman777/image-forgery-detector](https://github.com/salmanzaman777/image-forgery-detector)
 
 ## Documents:
-- [Project Report](Documents/Project_Report_Digital_Image_Forgery_Detector.docx)
+- [Project Report](documents/Project_Report_Digital_Image_Forgery_Detector.docx)

@@ -14,12 +14,12 @@ pip install -r requirements.txt
 streamlit run app.py
 ```
 
-**Train the model (generates synthetic data and saves `M3_best.keras`):**
+**Train the model (generates synthetic data and saves `model/M3_best.keras`):**
 ```bash
 python train.py
 ```
 
-The trained model file `M3_best.keras` is tracked via Git LFS (~98 MB).
+The trained model file `model/M3_best.keras` is tracked via Git LFS (~98 MB).
 
 ## Architecture
 
@@ -44,7 +44,7 @@ Both branch outputs are concatenated → Dense(256, relu) → Dropout(0.5) → D
 
 ### Inference App (`app.py`)
 
-Loads `M3_best.keras` (cached via `@st.cache_resource`). For each uploaded image:
+Loads `model/M3_best.keras` (cached via `@st.cache_resource`). For each uploaded image:
 1. Computes ELA image using identical parameters as training (`quality=90`, `scale=15`).
 2. Resizes both RGB and ELA to `(224, 224)` and runs `model.predict`.
 3. Threshold: `pred > 0.5` → FORGED, `pred < 0.5` → AUTHENTIC, `0.45–0.55` → UNCERTAIN.
