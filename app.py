@@ -87,18 +87,33 @@ def build_model(model_type='M3'):
 @st.cache_resource
 def load_trained_model():
     import os
+    from huggingface_hub import hf_hub_download
+
     model_path = 'M3_best.h5'
 
+    # Try local file first
     if os.path.exists(model_path):
         try:
             model = build_model('M3')
             model.load_weights(model_path)
             return model
         except Exception as e:
-            st.error(f"Failed to load model weights: {e}")
-            return None
-    else:
-        st.error("Model file not found. Please upload M3_best.h5 to the Space or configure model hosting.")
+            st.warning(f"Local model load failed: {e}. Downloading from HF Hub...")
+
+    # Download from HF Model Hub
+    try:
+        st.info("Downloading model from Hugging Face Hub...")
+        model_path = hf_hub_download(
+            repo_id="usamaalam/image-forgery-detection-model",
+            filename="M3_best.h5",
+            cache_dir=".cache"
+        )
+        model = build_model('M3')
+        model.load_weights(model_path)
+        st.success("Model loaded successfully!")
+        return model
+    except Exception as e:
+        st.error(f"Failed to load model: {e}")
         return None
 
 # ── Main UI ──────────────────────────────────────────────────────────────────
