@@ -47,3 +47,5 @@ model/*.keras
 
 # --- local eval scratch ---
 eval_out.txt
+thr_out.txt
+demo_out.txt

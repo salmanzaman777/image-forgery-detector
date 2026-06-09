@@ -142,6 +142,11 @@ st.markdown("""
 Detect tampering in images using a Dual-Branch CNN (RGB + ELA).
 Upload an image to see if it's Authentic or Forged.
 """)
+st.info(
+    "ℹ️ This model was trained on the **CASIA v2** forensics dataset and works best "
+    "on CASIA-style images. It is **ELA-driven**, so high-quality phone photos are "
+    "out-of-distribution and may be flagged unreliably. Test accuracy on CASIA: ~92%."
+)
 
 uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png", "tif"])
 
