@@ -27,103 +27,144 @@ st.set_page_config(
 # ── Global CSS ────────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
-/* ── Header bar ── */
-.ned-header {
-    background: linear-gradient(135deg, #1a2a4a 0%, #2c4a7c 100%);
-    color: #ffffff;
-    padding: 18px 28px 14px 28px;
-    border-radius: 8px;
-    margin-bottom: 18px;
-    border-left: 5px solid #4a9fd4;
+/* ── Full-bleed page background to tie header/footer to body ── */
+html, body, [data-testid="stAppViewContainer"] {
+    background-color: #f0f4f9 !important;
 }
-.ned-header .university {
-    font-size: 1.15rem;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    color: #e8f4fd;
-}
-.ned-header .program {
-    font-size: 0.88rem;
-    color: #a8cde8;
-    margin-top: 3px;
-}
-.ned-header .course {
-    font-size: 0.88rem;
-    color: #a8cde8;
+[data-testid="stHeader"] {
+    background-color: #1a2e50 !important;
 }
 
-/* ── Footer bar ── */
+/* ── Remove default top padding so our header sits flush ── */
+.block-container {
+    padding-top: 0 !important;
+    padding-bottom: 2rem;
+    max-width: 1200px;
+}
+
+/* ── Full-width header banner ── */
+.ned-header {
+    background: linear-gradient(90deg, #1a2e50 0%, #1e3a6e 60%, #1a5276 100%);
+    color: #ffffff;
+    padding: 20px 36px 16px 36px;
+    margin: -1rem -1rem 24px -1rem;   /* bleed beyond block-container padding */
+    border-bottom: 3px solid #4a9fd4;
+}
+.ned-header .university {
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    color: #ffffff;
+}
+.ned-header .meta {
+    font-size: 0.85rem;
+    color: #90bfe0;
+    margin-top: 4px;
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+.ned-header .meta span::before {
+    content: "▸ ";
+    color: #4a9fd4;
+}
+
+/* ── Full-width footer banner ── */
 .ned-footer {
-    background: linear-gradient(135deg, #1a2a4a 0%, #2c4a7c 100%);
-    color: #a8cde8;
-    padding: 12px 28px;
-    border-radius: 8px;
-    margin-top: 28px;
-    font-size: 0.82rem;
-    border-left: 5px solid #4a9fd4;
+    background: linear-gradient(90deg, #1a2e50 0%, #1e3a6e 60%, #1a5276 100%);
+    color: #90bfe0;
+    padding: 14px 36px;
+    margin: 32px -1rem -2rem -1rem;   /* bleed beyond block-container padding */
+    border-top: 3px solid #4a9fd4;
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    gap: 6px;
+    gap: 8px;
+    font-size: 0.82rem;
 }
-.ned-footer .contributors { color: #c8dff0; }
-.ned-footer .coordinator  { color: #c8dff0; }
+.ned-footer strong { color: #c8dff0; }
+.ned-footer .ned-footer-right {
+    color: #6a9bbf;
+    font-size: 0.75rem;
+    text-align: right;
+}
+
+/* ── Content card / white surface ── */
+.content-surface {
+    background: #ffffff;
+    border-radius: 10px;
+    padding: 24px 28px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 4px rgba(26,46,80,0.08);
+    border: 1px solid #dce8f5;
+}
 
 /* ── Metric card ── */
 .metric-card {
-    background: #f0f6ff;
+    background: #ffffff;
     border: 1px solid #c5d9f0;
+    border-top: 3px solid #4a9fd4;
     border-radius: 8px;
-    padding: 16px 20px;
+    padding: 18px 16px;
     text-align: center;
+    box-shadow: 0 1px 3px rgba(26,46,80,0.07);
 }
 .metric-card .metric-value {
-    font-size: 2rem;
+    font-size: 1.9rem;
     font-weight: 700;
-    color: #1a4a8a;
+    color: #1a2e50;
 }
 .metric-card .metric-label {
-    font-size: 0.82rem;
+    font-size: 0.78rem;
     color: #5a7a9a;
-    margin-top: 4px;
+    margin-top: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
 }
 
 /* ── Section headers ── */
 .section-header {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #1a2a4a;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #1a2e50;
     border-bottom: 2px solid #4a9fd4;
     padding-bottom: 6px;
-    margin: 22px 0 14px 0;
-}
-
-/* ── Architecture box ── */
-.arch-box {
-    background: #f8fbff;
-    border: 1px solid #d0e4f7;
-    border-radius: 8px;
-    padding: 14px 18px;
-    font-family: monospace;
-    font-size: 0.85rem;
-    line-height: 1.7;
+    margin: 26px 0 14px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 /* ── Info pill ── */
 .info-pill {
     display: inline-block;
-    background: #e8f4fd;
+    background: #deedf8;
     color: #1a4a8a;
     border-radius: 20px;
     padding: 3px 12px;
     font-size: 0.78rem;
     font-weight: 600;
     margin: 3px 4px 3px 0;
+    border: 1px solid #b8d4ec;
 }
 
-/* Hide default streamlit menu padding */
-.block-container { padding-top: 1.2rem; }
+/* ── Streamlit tab strip — match the palette ── */
+[data-testid="stTabs"] [data-baseweb="tab-list"] {
+    background-color: #e8f0f9;
+    border-radius: 8px 8px 0 0;
+    padding: 4px 8px 0 8px;
+    gap: 4px;
+}
+[data-testid="stTabs"] [data-baseweb="tab"] {
+    color: #4a6a8a;
+    font-weight: 600;
+    border-radius: 6px 6px 0 0;
+}
+[data-testid="stTabs"] [aria-selected="true"] {
+    color: #1a2e50 !important;
+    border-bottom: 3px solid #4a9fd4 !important;
+    background: #ffffff !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -131,7 +172,10 @@ st.markdown("""
 st.markdown("""
 <div class="ned-header">
   <div class="university">NED University of Engineering and Technology</div>
-  <div class="program">Post Graduate Diploma in Generative AI &nbsp;|&nbsp; Course: Deep Learning</div>
+  <div class="meta">
+    <span>Post Graduate Diploma in Generative AI</span>
+    <span>Course: Deep Learning</span>
+  </div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -766,16 +810,12 @@ a larger, more diverse dataset would improve real-world generalization.
 st.markdown("""
 <div class="ned-footer">
   <div>
-    <span class="contributors">
-      <strong>Contributors:</strong> Salman Zaman &nbsp;|&nbsp; Muhammad Usama Alam
-    </span>
+    <strong>Contributors:</strong>&nbsp; Salman Zaman &nbsp;·&nbsp; Muhammad Usama Alam
   </div>
   <div>
-    <span class="coordinator">
-      <strong>Project Coordinator:</strong> Sajid Majeed
-    </span>
+    <strong>Project Coordinator:</strong>&nbsp; Sajid Majeed
   </div>
-  <div style="color:#7a9bbf; font-size:0.75rem;">
+  <div class="ned-footer-right">
     NED University of Engineering and Technology &nbsp;·&nbsp;
     PG Diploma in Generative AI &nbsp;·&nbsp; Deep Learning
   </div>
