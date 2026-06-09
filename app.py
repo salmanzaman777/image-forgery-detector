@@ -86,7 +86,7 @@ def load_trained_model():
     import os
     from huggingface_hub import hf_hub_download
 
-    local_path = 'M3_best.h5'
+    local_path = 'M3_best_v2.h5'
 
     # Resolve a path to the H5 weights (local first, then HF Hub)
     if os.path.exists(local_path):
@@ -95,7 +95,7 @@ def load_trained_model():
         st.info("Downloading model from Hugging Face Hub...")
         model_path = hf_hub_download(
             repo_id="usamaalam/image-forgery-detection-model",
-            filename="M3_best.h5",
+            filename="M3_best_v2.h5",
             cache_dir=".cache"
         )
 
