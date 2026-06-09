@@ -20,7 +20,12 @@ def compute_ela(original, quality=ELA_QUALITY, scale=ELA_SCALE):
     compressed = Image.open(buf)
 
     ela_image = ImageChops.difference(original, compressed)
-    ela_image = ImageEnhance.Brightness(ela_image).enhance(scale)
+    # Must match train.py exactly: ImageChops.multiply divides by 255 internally,
+    # so this attenuates (diff * scale / 255) rather than amplifies. The model was
+    # trained on these dark ELA images — using Brightness.enhance here breaks it.
+    ela_image = ImageChops.multiply(
+        ela_image, Image.new('RGB', ela_image.size, (scale, scale, scale))
+    )
     return ela_image
 
 def get_gradcam(model, input_data):
