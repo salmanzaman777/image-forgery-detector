@@ -24,44 +24,47 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-# ── Global CSS ────────────────────────────────────────────────────────────────
+# ── Global CSS — complete dark professional theme ────────────────────────────
 st.markdown("""
 <style>
-/* ── Full-bleed page background to tie header/footer to body ── */
-html, body, [data-testid="stAppViewContainer"] {
-    background-color: #f0f4f9 !important;
+/* ── Base surfaces ── */
+[data-testid="stAppViewContainer"], .main, .stApp {
+    background-color: #0e1b2e !important;
 }
+/* Streamlit's own fixed top header — make it match so nothing clashes */
 [data-testid="stHeader"] {
-    background-color: #1a2e50 !important;
+    background-color: #0e1b2e !important;
 }
 
-/* ── Remove default top padding so our header sits flush ── */
+/* Keep clear of Streamlit's fixed top header so our banner isn't clipped */
 .block-container {
-    padding-top: 0 !important;
-    padding-bottom: 2rem;
-    max-width: 1200px;
+    padding-top: 2.2rem !important;
+    padding-bottom: 1rem;
+    max-width: 1180px;
 }
 
-/* ── Full-width header banner ── */
+/* ── Header banner ── */
 .ned-header {
-    background: linear-gradient(90deg, #1a2e50 0%, #1e3a6e 60%, #1a5276 100%);
+    background: linear-gradient(90deg, #122842 0%, #1a3a63 55%, #155674 100%);
     color: #ffffff;
-    padding: 20px 36px 16px 36px;
-    margin: -1rem -1rem 24px -1rem;   /* bleed beyond block-container padding */
-    border-bottom: 3px solid #4a9fd4;
+    padding: 20px 32px 18px 32px;
+    margin: 0 0 22px 0;
+    border-radius: 10px;
+    border-left: 5px solid #4a9fd4;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.35);
 }
 .ned-header .university {
-    font-size: 1.2rem;
+    font-size: 1.25rem;
     font-weight: 700;
     letter-spacing: 0.4px;
     color: #ffffff;
 }
 .ned-header .meta {
-    font-size: 0.85rem;
-    color: #90bfe0;
-    margin-top: 4px;
+    font-size: 0.86rem;
+    color: #8fc1e6;
+    margin-top: 6px;
     display: flex;
-    gap: 24px;
+    gap: 26px;
     flex-wrap: wrap;
 }
 .ned-header .meta span::before {
@@ -69,101 +72,115 @@ html, body, [data-testid="stAppViewContainer"] {
     color: #4a9fd4;
 }
 
-/* ── Full-width footer banner ── */
+/* ── Footer banner ── */
 .ned-footer {
-    background: linear-gradient(90deg, #1a2e50 0%, #1e3a6e 60%, #1a5276 100%);
-    color: #90bfe0;
-    padding: 14px 36px;
-    margin: 32px -1rem -2rem -1rem;   /* bleed beyond block-container padding */
-    border-top: 3px solid #4a9fd4;
+    background: linear-gradient(90deg, #122842 0%, #1a3a63 55%, #155674 100%);
+    color: #8fc1e6;
+    padding: 16px 32px;
+    margin: 30px 0 8px 0;
+    border-radius: 10px;
+    border-left: 5px solid #4a9fd4;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.35);
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 10px;
     font-size: 0.82rem;
 }
-.ned-footer strong { color: #c8dff0; }
+.ned-footer strong { color: #d7e8f6; }
 .ned-footer .ned-footer-right {
-    color: #6a9bbf;
-    font-size: 0.75rem;
+    color: #6a93b8;
+    font-size: 0.74rem;
     text-align: right;
-}
-
-/* ── Content card / white surface ── */
-.content-surface {
-    background: #ffffff;
-    border-radius: 10px;
-    padding: 24px 28px;
-    margin-bottom: 20px;
-    box-shadow: 0 1px 4px rgba(26,46,80,0.08);
-    border: 1px solid #dce8f5;
 }
 
 /* ── Metric card ── */
 .metric-card {
-    background: #ffffff;
-    border: 1px solid #c5d9f0;
+    background: #17283f;
+    border: 1px solid #2a435f;
     border-top: 3px solid #4a9fd4;
     border-radius: 8px;
     padding: 18px 16px;
     text-align: center;
-    box-shadow: 0 1px 3px rgba(26,46,80,0.07);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
 }
 .metric-card .metric-value {
-    font-size: 1.9rem;
+    font-size: 1.95rem;
     font-weight: 700;
-    color: #1a2e50;
+    color: #6fb8e8;
 }
 .metric-card .metric-label {
-    font-size: 0.78rem;
-    color: #5a7a9a;
+    font-size: 0.76rem;
+    color: #9fb6cf;
     margin-top: 5px;
     text-transform: uppercase;
-    letter-spacing: 0.4px;
+    letter-spacing: 0.5px;
 }
 
 /* ── Section headers ── */
 .section-header {
     font-size: 1.05rem;
     font-weight: 700;
-    color: #1a2e50;
+    color: #cfe4f6;
     border-bottom: 2px solid #4a9fd4;
     padding-bottom: 6px;
-    margin: 26px 0 14px 0;
+    margin: 28px 0 14px 0;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.6px;
 }
 
 /* ── Info pill ── */
 .info-pill {
     display: inline-block;
-    background: #deedf8;
-    color: #1a4a8a;
+    background: #1c3a59;
+    color: #8fc1e6;
     border-radius: 20px;
     padding: 3px 12px;
     font-size: 0.78rem;
     font-weight: 600;
     margin: 3px 4px 3px 0;
-    border: 1px solid #b8d4ec;
+    border: 1px solid #2f5478;
 }
 
-/* ── Streamlit tab strip — match the palette ── */
+/* ── Tab strip ── */
 [data-testid="stTabs"] [data-baseweb="tab-list"] {
-    background-color: #e8f0f9;
+    background-color: #142336;
     border-radius: 8px 8px 0 0;
-    padding: 4px 8px 0 8px;
+    padding: 5px 8px 0 8px;
     gap: 4px;
+    border-bottom: 1px solid #2a435f;
 }
 [data-testid="stTabs"] [data-baseweb="tab"] {
-    color: #4a6a8a;
+    color: #8da7c2;
     font-weight: 600;
     border-radius: 6px 6px 0 0;
 }
 [data-testid="stTabs"] [aria-selected="true"] {
-    color: #1a2e50 !important;
+    color: #6fb8e8 !important;
     border-bottom: 3px solid #4a9fd4 !important;
-    background: #ffffff !important;
+    background: #17283f !important;
+}
+
+/* ── Tables ── */
+.stMarkdown table {
+    border-collapse: collapse;
+    width: 100%;
+}
+.stMarkdown table th {
+    background-color: #1a3050 !important;
+    color: #cfe4f6 !important;
+    border: 1px solid #2a435f !important;
+}
+.stMarkdown table td {
+    background-color: #142336 !important;
+    color: #d3e0ee !important;
+    border: 1px solid #2a435f !important;
+}
+
+/* ── Code blocks ── */
+.stCodeBlock, pre {
+    background-color: #0a1626 !important;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -295,12 +312,12 @@ def make_architecture_figure():
     ax.set_xlim(0, 11)
     ax.set_ylim(0, 5.5)
     ax.axis('off')
-    fig.patch.set_facecolor('#f8fbff')
+    fig.patch.set_facecolor('#0e1b2e')
 
     def box(x, y, w, h, label, sub="", color="#2c4a7c", text_color="white", fontsize=9):
         rect = FancyBboxPatch((x - w/2, y - h/2), w, h,
                               boxstyle="round,pad=0.08", linewidth=1.2,
-                              edgecolor=color, facecolor=color)
+                              edgecolor="#4a9fd4", facecolor=color)
         ax.add_patch(rect)
         ax.text(x, y + (0.12 if sub else 0), label, ha='center', va='center',
                 color=text_color, fontsize=fontsize, fontweight='bold')
@@ -318,21 +335,21 @@ def make_architecture_figure():
     box(0.8, 1.5, 1.3, 0.65, "ELA Input", "224×224×3", color="#4a9fd4")
 
     # RGB branch
-    box(2.8, 4.0, 1.5, 0.65, "ResNet50", "frozen, ImageNet", color="#1a5276")
-    box(4.5, 4.0, 1.5, 0.65, "GlobalAvgPool", "→ 2048-d", color="#1a5276")
+    box(2.8, 4.0, 1.5, 0.65, "ResNet50", "frozen, ImageNet", color="#2e7bb0")
+    box(4.5, 4.0, 1.5, 0.65, "GlobalAvgPool", "→ 2048-d", color="#2e7bb0")
 
     # ELA branch
-    box(2.8, 2.8, 1.5, 0.65, "Conv2D 32", "3×3, ReLU+BN+Pool", color="#145a32")
-    box(2.8, 1.9, 1.5, 0.65, "Conv2D 64", "3×3, ReLU+BN+Pool", color="#145a32")
-    box(2.8, 1.0, 1.5, 0.65, "Conv2D 128", "3×3, ReLU+BN+Pool", color="#145a32")
-    box(4.5, 1.5, 1.5, 0.65, "GlobalAvgPool", "→ 128-d", color="#145a32")
+    box(2.8, 2.8, 1.5, 0.65, "Conv2D 32", "3×3, ReLU+BN+Pool", color="#2a8f56")
+    box(2.8, 1.9, 1.5, 0.65, "Conv2D 64", "3×3, ReLU+BN+Pool", color="#2a8f56")
+    box(2.8, 1.0, 1.5, 0.65, "Conv2D 128", "3×3, ReLU+BN+Pool", color="#2a8f56")
+    box(4.5, 1.5, 1.5, 0.65, "GlobalAvgPool", "→ 128-d", color="#2a8f56")
 
     # Concat
-    box(6.4, 2.75, 1.3, 0.65, "Concatenate", "2176-d", color="#6e2f8a")
+    box(6.4, 2.75, 1.3, 0.65, "Concatenate", "2176-d", color="#9b59b6")
 
     # Dense head
-    box(8.0, 2.75, 1.3, 0.65, "Dense 256", "ReLU + Drop 0.5", color="#7d3c98")
-    box(9.8, 2.75, 1.1, 0.65, "Dense 1", "Sigmoid", color="#922b21")
+    box(8.0, 2.75, 1.3, 0.65, "Dense 256", "ReLU + Drop 0.5", color="#8e44ad")
+    box(9.8, 2.75, 1.1, 0.65, "Dense 1", "Sigmoid", color="#c0392b")
 
     # Arrows — RGB branch
     arrow(1.45, 4.0, 2.05, 4.0)
@@ -365,18 +382,20 @@ def make_architecture_figure():
 
     # Output label
     ax.text(10.6, 2.75, "0 / 1\nAuth /\nForged",
-            ha='center', va='center', fontsize=8, color="#922b21", fontweight='bold')
+            ha='center', va='center', fontsize=8, color="#e8a0a0", fontweight='bold')
 
     # Legend
     legend_items = [
         mpatches.Patch(color="#4a9fd4", label="Input"),
-        mpatches.Patch(color="#1a5276", label="RGB Branch (ResNet50)"),
-        mpatches.Patch(color="#145a32", label="ELA Branch (Custom CNN)"),
-        mpatches.Patch(color="#6e2f8a", label="Fusion"),
-        mpatches.Patch(color="#922b21", label="Output Head"),
+        mpatches.Patch(color="#2e7bb0", label="RGB Branch (ResNet50)"),
+        mpatches.Patch(color="#2a8f56", label="ELA Branch (Custom CNN)"),
+        mpatches.Patch(color="#9b59b6", label="Fusion"),
+        mpatches.Patch(color="#c0392b", label="Output Head"),
     ]
-    ax.legend(handles=legend_items, loc='lower center', ncol=5,
-              fontsize=7.5, framealpha=0.85, bbox_to_anchor=(0.48, -0.02))
+    leg = ax.legend(handles=legend_items, loc='lower center', ncol=5,
+                    fontsize=7.5, framealpha=0.0, bbox_to_anchor=(0.48, -0.02),
+                    labelcolor='#c8dff0')
+    leg.get_frame().set_edgecolor('#2a435f')
 
     fig.tight_layout(pad=0.4)
     buf = io.BytesIO()
@@ -638,8 +657,8 @@ Tampered pixels were re-saved at a different quality level; the diff reveals tho
     with perf_col2:
         # Score distribution bar chart
         fig2, ax2 = plt.subplots(figsize=(5, 2.8))
-        fig2.patch.set_facecolor('#f8fbff')
-        ax2.set_facecolor('#f8fbff')
+        fig2.patch.set_facecolor('#0e1b2e')
+        ax2.set_facecolor('#142336')
 
         bins = np.linspace(0, 1, 21)
         au_scores = np.concatenate([
@@ -650,14 +669,17 @@ Tampered pixels were re-saved at a different quality level; the diff reveals tho
             np.random.default_rng(2).beta(30, 0.4, 100),
             np.random.default_rng(2).uniform(0.0, 0.5, 10),
         ])
-        ax2.hist(au_scores, bins=bins, alpha=0.75, color='#2ecc71', label='Authentic')
-        ax2.hist(tp_scores, bins=bins, alpha=0.75, color='#e74c3c', label='Forged')
-        ax2.axvline(0.5, color='#1a2a4a', lw=1.5, linestyle='--', label='Threshold 0.5')
-        ax2.set_xlabel("Model score", fontsize=8)
-        ax2.set_ylabel("Count", fontsize=8)
-        ax2.set_title("Illustrative score distribution", fontsize=8.5, fontweight='bold')
-        ax2.legend(fontsize=7.5)
-        ax2.tick_params(labelsize=7)
+        ax2.hist(au_scores, bins=bins, alpha=0.8, color='#2ecc71', label='Authentic')
+        ax2.hist(tp_scores, bins=bins, alpha=0.8, color='#e74c3c', label='Forged')
+        ax2.axvline(0.5, color='#e6eef7', lw=1.5, linestyle='--', label='Threshold 0.5')
+        ax2.set_xlabel("Model score", fontsize=8, color='#c8dff0')
+        ax2.set_ylabel("Count", fontsize=8, color='#c8dff0')
+        ax2.set_title("Illustrative score distribution", fontsize=8.5,
+                      fontweight='bold', color='#cfe4f6')
+        leg2 = ax2.legend(fontsize=7.5, framealpha=0.0, labelcolor='#c8dff0')
+        ax2.tick_params(labelsize=7, colors='#9fb6cf')
+        for spine in ax2.spines.values():
+            spine.set_color('#2a435f')
         fig2.tight_layout(pad=0.5)
 
         buf2 = io.BytesIO()
@@ -690,20 +712,25 @@ ResNet50 backbone provides complementary texture context but does not dominate.
 
     with abl_col2:
         fig3, ax3 = plt.subplots(figsize=(4.5, 2.6))
-        fig3.patch.set_facecolor('#f8fbff')
-        ax3.set_facecolor('#f8fbff')
+        fig3.patch.set_facecolor('#0e1b2e')
+        ax3.set_facecolor('#142336')
         variants = ['M1\nRGB only', 'M2\nELA only', 'M3\nDual-branch']
         aucs     = [0.5822, 0.9807, 0.9774]
-        colors   = ['#95a5a6', '#27ae60', '#2980b9']
-        bars = ax3.bar(variants, aucs, color=colors, width=0.5, edgecolor='white', linewidth=0.8)
+        colors   = ['#7f8c9a', '#2ecc71', '#4a9fd4']
+        bars = ax3.bar(variants, aucs, color=colors, width=0.5,
+                       edgecolor='#0e1b2e', linewidth=0.8)
         ax3.set_ylim(0.4, 1.05)
-        ax3.axhline(1.0, color='#bdc3c7', lw=0.8, linestyle=':')
+        ax3.axhline(1.0, color='#3a5575', lw=0.8, linestyle=':')
         for bar, val in zip(bars, aucs):
             ax3.text(bar.get_x() + bar.get_width()/2, val + 0.01,
-                     f"{val:.4f}", ha='center', va='bottom', fontsize=8, fontweight='bold')
-        ax3.set_ylabel("AUC-ROC", fontsize=8)
-        ax3.set_title("Branch Ablation — AUC-ROC", fontsize=8.5, fontweight='bold')
-        ax3.tick_params(labelsize=7.5)
+                     f"{val:.4f}", ha='center', va='bottom', fontsize=8,
+                     fontweight='bold', color='#cfe4f6')
+        ax3.set_ylabel("AUC-ROC", fontsize=8, color='#c8dff0')
+        ax3.set_title("Branch Ablation — AUC-ROC", fontsize=8.5,
+                      fontweight='bold', color='#cfe4f6')
+        ax3.tick_params(labelsize=7.5, colors='#9fb6cf')
+        for spine in ax3.spines.values():
+            spine.set_color('#2a435f')
         fig3.tight_layout(pad=0.5)
         buf3 = io.BytesIO()
         fig3.savefig(buf3, format='png', dpi=120, bbox_inches='tight',
