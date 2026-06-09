@@ -10,6 +10,7 @@ from tensorflow.keras import models, layers
 IMG_SIZE   = (224, 224)
 ELA_QUALITY = 90
 ELA_SCALE  = 15
+BUILD_VERSION = "v3-notebook-ela-2026-06-09"  # bump on each deploy to detect stale builds
 
 # ── Forensic Utilities ───────────────────────────────────────────────────────
 def compute_ela_jpeg_bytes(original, quality=ELA_QUALITY, scale=ELA_SCALE):
@@ -177,8 +178,22 @@ if uploaded_file is not None:
         color = "red" if label == "FORGED" else "green" if label == "AUTHENTIC" else "orange"
         st.markdown(f"### Result: <span style='color:{color}'>{label}</span>", unsafe_allow_html=True)
         st.write(f"**Confidence:** {confidence:.2%}")
-        
+
         st.progress(float(confidence))
+
+        with st.expander("🔬 Debug info (preprocessing & model)"):
+            try:
+                in_order = [getattr(i, "name", "?") for i in m3.inputs]
+            except Exception:
+                in_order = "n/a"
+            st.code(
+                f"build      : {BUILD_VERSION}\n"
+                f"raw pred   : {float(pred):.6f}\n"
+                f"model input: {in_order}\n"
+                f"rgb  shape={rgb_in.shape} mean={rgb_in.mean():.4f} max={rgb_in.max():.4f}\n"
+                f"ela  shape={ela_in.shape} mean={ela_in.mean():.4f} max={ela_in.max():.4f}\n"
+                f"orig size  : {image.size}"
+            )
 
     st.divider()
     
