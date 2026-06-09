@@ -86,28 +86,32 @@ def load_trained_model():
     import os
     from huggingface_hub import hf_hub_download
 
-    model_path = 'M3_best.h5'
+    local_path = 'M3_best.h5'
 
-    # Try local file first
-    if os.path.exists(model_path):
-        try:
-            model = build_model('M3')
-            model.load_weights(model_path)
-            return model
-        except Exception as e:
-            st.warning(f"Local model load failed: {e}. Downloading from HF Hub...")
-
-    # Download from HF Model Hub
-    try:
+    # Resolve a path to the H5 weights (local first, then HF Hub)
+    if os.path.exists(local_path):
+        model_path = local_path
+    else:
         st.info("Downloading model from Hugging Face Hub...")
         model_path = hf_hub_download(
             repo_id="usamaalam/image-forgery-detection-model",
             filename="M3_best.h5",
             cache_dir=".cache"
         )
-        model = build_model('M3')
-        model.load_weights(model_path)
+
+    # Preferred: load the full saved model (architecture + weights) from H5
+    try:
+        model = tf.keras.models.load_model(model_path, compile=False)
         st.success("Model loaded successfully!")
+        return model
+    except Exception as e:
+        st.warning(f"Full-model load failed ({e}); rebuilding architecture and loading weights...")
+
+    # Fallback: rebuild architecture and load weights by name
+    try:
+        model = build_model('M3')
+        model.load_weights(model_path, by_name=True, skip_mismatch=True)
+        st.success("Model loaded (weights-only fallback).")
         return model
     except Exception as e:
         st.error(f"Failed to load model: {e}")
