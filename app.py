@@ -155,6 +155,11 @@ st.markdown("""
     color: #8da7c2;
     font-weight: 600;
     border-radius: 6px 6px 0 0;
+    padding: 8px 18px;
+}
+[data-testid="stTabs"] [data-baseweb="tab"] p {
+    font-size: 1.05rem;
+    font-weight: 600;
 }
 [data-testid="stTabs"] [aria-selected="true"] {
     color: #6fb8e8 !important;
