@@ -4,7 +4,7 @@ import tensorflow as tf
 import cv2
 import io
 from PIL import Image, ImageChops, ImageEnhance
-from tensorflow.keras import models
+from tensorflow.keras import models, layers
 
 # ── Configuration ────────────────────────────────────────────────────────────
 IMG_SIZE   = (224, 224)
