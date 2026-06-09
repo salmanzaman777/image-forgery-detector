@@ -58,31 +58,28 @@ def get_gradcam(model, input_data):
     return heatmap
 
 def build_model(model_type='M3'):
-    IMG_SIZE = (224, 224)
-    ela_input = layers.Input(shape=(*IMG_SIZE, 3), name='ela_input')
-    x = layers.Conv2D(32,  (3,3), activation='relu', padding='same')(ela_input)
-    x = layers.BatchNormalization()(x)
-    x = layers.MaxPooling2D()(x)
-    x = layers.Conv2D(64,  (3,3), activation='relu', padding='same')(x)
-    x = layers.BatchNormalization()(x)
-    x = layers.MaxPooling2D()(x)
-    x = layers.Conv2D(128, (3,3), activation='relu', padding='same')(x)
-    x = layers.BatchNormalization()(x)
-    x = layers.MaxPooling2D()(x)
-    ela_features = layers.GlobalAveragePooling2D(name='ela_gap')(x)
+    # RGB branch — mirrors train.py get_rgb_branch() exactly
+    base = tf.keras.applications.ResNet50(include_top=False, weights='imagenet', input_shape=(*IMG_SIZE, 3))
+    base.trainable = False
+    rgb_input = layers.Input(shape=(*IMG_SIZE, 3))
+    x = tf.keras.applications.resnet50.preprocess_input(rgb_input)
+    x = base(x, training=False)
+    rgb_features = layers.GlobalAveragePooling2D()(x)
 
-    rgb_input  = layers.Input(shape=(*IMG_SIZE, 3), name='rgb_input')
-    resnet     = tf.keras.applications.ResNet50(weights='imagenet', include_top=False, input_tensor=rgb_input)
-    for layer in resnet.layers:
-        layer.trainable = False
-    rgb_features = layers.GlobalAveragePooling2D(name='rgb_gap')(resnet.output)
+    # ELA branch — mirrors train.py get_ela_branch() exactly (includes Rescaling)
+    ela_input = layers.Input(shape=(*IMG_SIZE, 3))
+    x = layers.Rescaling(1. / 255)(ela_input)
+    for filters in [32, 64, 128]:
+        x = layers.Conv2D(filters, (3, 3), activation='relu', padding='same')(x)
+        x = layers.BatchNormalization()(x)
+        x = layers.MaxPooling2D((2, 2))(x)
+    ela_features = layers.GlobalAveragePooling2D()(x)
 
-    combined = layers.Concatenate(name='fused')([rgb_features, ela_features])
-    x = layers.Dense(256, activation='relu')(combined)
-    x = layers.Dropout(0.5)(x)
-    output = layers.Dense(1, activation='sigmoid', name='output')(x)
-
-    return tf.keras.Model(inputs=[rgb_input, ela_input], outputs=output, name=model_type)
+    fused = layers.Concatenate()([rgb_features, ela_features])
+    out = layers.Dense(1, activation='sigmoid')(
+        layers.Dropout(0.5)(layers.Dense(256, activation='relu')(fused))
+    )
+    return tf.keras.Model(inputs=[rgb_input, ela_input], outputs=out)
 
 @st.cache_resource
 def load_trained_model():
@@ -138,10 +135,11 @@ if uploaded_file is not None:
         # Load model
         m3 = load_trained_model()
         
-        # Prepare inputs — normalize to [0, 1] to match training
-        rgb_in  = np.array(image.resize(IMG_SIZE)).astype(np.float32)[np.newaxis] / 255.0
+        # RGB: preprocess_input handles normalization inside the branch
+        # ELA: Rescaling(1/255) is inside the branch, so pass raw [0,255]
+        rgb_in  = np.array(image.resize(IMG_SIZE)).astype(np.float32)[np.newaxis]
         ela_img = compute_ela(image)
-        ela_in  = np.array(ela_img.resize(IMG_SIZE)).astype(np.float32)[np.newaxis] / 255.0
+        ela_in  = np.array(ela_img.resize(IMG_SIZE)).astype(np.float32)[np.newaxis]
         input_data = [rgb_in, ela_in]
             
         # Inference
