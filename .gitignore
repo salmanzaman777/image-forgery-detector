@@ -49,3 +49,6 @@ model/*.keras
 eval_out.txt
 thr_out.txt
 demo_out.txt
+
+# --- local random test batch ---
+test_batch/
