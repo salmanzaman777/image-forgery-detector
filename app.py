@@ -12,21 +12,32 @@ ELA_QUALITY = 90
 ELA_SCALE  = 15
 
 # ── Forensic Utilities ───────────────────────────────────────────────────────
-def compute_ela(original, quality=ELA_QUALITY, scale=ELA_SCALE):
+def compute_ela_jpeg_bytes(original, quality=ELA_QUALITY, scale=ELA_SCALE):
+    """Reproduce the TRAINING NOTEBOOK's cached ELA exactly (not train.py, which
+    is stale). Steps: recompress at `quality`, diff, Brightness.enhance(scale) to
+    amplify, then encode to JPEG bytes (PIL default quality 75) — the notebook
+    cached ELA to disk as JPEG, so the model saw JPEG-compressed ELA."""
     original = original.convert('RGB')
     buf = io.BytesIO()
     original.save(buf, 'JPEG', quality=quality)
     buf.seek(0)
-    compressed = Image.open(buf)
+    recompressed = Image.open(buf).convert('RGB')
 
-    ela_image = ImageChops.difference(original, compressed)
-    # Must match train.py exactly: ImageChops.multiply divides by 255 internally,
-    # so this attenuates (diff * scale / 255) rather than amplifies. The model was
-    # trained on these dark ELA images — using Brightness.enhance here breaks it.
-    ela_image = ImageChops.multiply(
-        ela_image, Image.new('RGB', ela_image.size, (scale, scale, scale))
-    )
-    return ela_image
+    ela_image = ImageChops.difference(original, recompressed)
+    ela_image = ImageEnhance.Brightness(ela_image).enhance(scale)
+
+    out = io.BytesIO()
+    ela_image.save(out, 'JPEG')
+    return out.getvalue()
+
+
+def ela_tensor(jpeg_bytes):
+    """Decode ELA exactly as the notebook's decode_ela: tf.image.decode_jpeg +
+    tf.image.resize (bilinear) + /255. The model is ELA-driven, so this must
+    match training's decode path byte-for-byte."""
+    img = tf.image.decode_jpeg(jpeg_bytes, channels=3)
+    img = tf.image.resize(img, IMG_SIZE)
+    return (tf.cast(img, tf.float32) / 255.0).numpy()
 
 def get_gradcam(model, input_data):
     # Dynamically find the last conv layer
@@ -144,11 +155,13 @@ if uploaded_file is not None:
         # Load model
         m3 = load_trained_model()
         
-        # RGB: preprocess_input handles normalization inside the branch
-        # ELA: Rescaling(1/255) is inside the branch, so pass raw [0,255]
-        rgb_in  = np.array(image.resize(IMG_SIZE)).astype(np.float32)[np.newaxis]
-        ela_img = compute_ela(image)
-        ela_in  = np.array(ela_img.resize(IMG_SIZE)).astype(np.float32)[np.newaxis]
+        # Match the training notebook exactly. Both branches normalized to [0,1]
+        # (the model has no preprocess_input/Rescaling layers). RGB: PIL LANCZOS.
+        # ELA: bright + JPEG, decoded/resized via tf.image (bilinear).
+        rgb_in  = np.array(image.resize(IMG_SIZE, Image.LANCZOS), np.float32)[np.newaxis] / 255.0
+        ela_bytes = compute_ela_jpeg_bytes(image)
+        ela_in  = ela_tensor(ela_bytes)[np.newaxis]
+        ela_img = Image.open(io.BytesIO(ela_bytes)).convert('RGB')  # for display
         input_data = [rgb_in, ela_in]
             
         # Inference

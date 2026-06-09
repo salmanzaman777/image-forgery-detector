@@ -41,3 +41,6 @@ Thumbs.db
 kaggle.json
 model/*.h5
 model/*.keras
+
+# --- HF Hub model cache (downloaded at runtime) ---
+.cache/
