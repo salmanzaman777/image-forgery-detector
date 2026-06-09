@@ -44,3 +44,6 @@ model/*.keras
 
 # --- HF Hub model cache (downloaded at runtime) ---
 .cache/
+
+# --- local eval scratch ---
+eval_out.txt
