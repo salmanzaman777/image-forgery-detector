@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Model Comparison — initial vs revised — Image Forgery Detector</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy: #0f172a;
+    --navy-2: #1e293b;
+    --accent: #2563eb;
+    --accent-soft: #93c5fd;
+    --good: #16a34a;
+    --good-bg: #f0fdf4;
+    --good-border: #86efac;
+    --bad: #dc2626;
+    --bad-bg: #fef2f2;
+    --bad-border: #fca5a5;
+    --code-bg: #0f172a;
+    --code-text: #e2e8f0;
+    --border: #e2e8f0;
+  }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    color: #1e293b;
+    background: #f8fafc;
+    padding-bottom: 60px;
+  }
+
+  /* ── Header ── */
+  .top-header {
+    background: var(--navy);
+    display: flex; align-items: center; padding: 18px 32px;
+    gap: 16px;
+  }
+  .top-header .shield { font-size: 28px; }
+  .top-header h1 {
+    font-size: 18px; font-weight: 700; color: #f1f5f9; line-height: 1.25;
+  }
+  .top-header h1 span { color: #94a3b8; font-weight: 400; font-size: 13px; display: block; }
+  .top-header .tag {
+    margin-left: auto;
+    background: #1e3a5f; color: var(--accent-soft);
+    font-size: 12px; font-weight: 600;
+    padding: 5px 14px; border-radius: 20px;
+    border: 1px solid #2563eb44;
+  }
+
+  /* ── Sub-header / university strip ── */
+  .uni-strip {
+    background: linear-gradient(90deg, #122842 0%, #1a3a63 55%, #155674 100%);
+    color: #cfe4f6; padding: 12px 32px; font-size: 13px;
+    display: flex; gap: 24px; flex-wrap: wrap; align-items: center;
+    border-bottom: 3px solid #4a9fd4;
+  }
+  .uni-strip strong { color: #fff; font-size: 14px; }
+  .uni-strip span::before { content: "▸ "; color: #4a9fd4; }
+
+  /* ── Container ── */
+  .wrap { max-width: 1000px; margin: 0 auto; padding: 32px; }
+
+  h2 {
+    font-size: 20px; color: var(--navy); margin: 34px 0 14px;
+    padding-bottom: 8px; border-bottom: 2px solid var(--accent);
+  }
+  h2:first-of-type { margin-top: 8px; }
+  h3 { font-size: 16px; color: var(--navy-2); margin: 22px 0 10px; }
+  p { margin-bottom: 12px; }
+  .meta { color: #64748b; font-size: 13px; margin-bottom: 4px; }
+  .meta code { background: #e2e8f0; padding: 1px 6px; border-radius: 4px; }
+
+  /* ── Tables ── */
+  table { border-collapse: collapse; width: 100%; margin: 14px 0 8px; font-size: 14px; }
+  th, td { border: 1px solid var(--border); padding: 8px 12px; text-align: left; }
+  th { background: #1a3050; color: #e8f1fb; font-weight: 600; }
+  tbody tr:nth-child(even) { background: #f1f5f9; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .win { color: var(--good); font-weight: 700; }
+  .pos { color: var(--good); font-weight: 600; }
+  .neg { color: var(--bad); font-weight: 600; }
+
+  /* ── Callout boxes ── */
+  .callout { border-radius: 8px; padding: 14px 18px; margin: 16px 0; border-left: 4px solid; }
+  .callout.bad  { background: var(--bad-bg);  border-color: var(--bad-border);  }
+  .callout.good { background: var(--good-bg); border-color: var(--good-border); }
+  .callout.note { background: #eff6ff; border-color: #93c5fd; }
+  .callout strong { display: inline; }
+
+  /* ── Confusion blocks ── */
+  .cm { display: flex; gap: 20px; flex-wrap: wrap; margin: 10px 0; }
+  .cm-card { flex: 1; min-width: 220px; background: #fff; border: 1px solid var(--border);
+             border-radius: 8px; padding: 12px 16px; }
+  .cm-card h4 { font-size: 13px; color: var(--navy-2); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .4px; }
+  .cm-card code { font-family: 'Consolas', monospace; color: #0f172a; }
+  .cm-card .desc { font-size: 12.5px; color: #475569; margin-top: 4px; }
+
+  /* ── Code ── */
+  pre { background: var(--code-bg); color: var(--code-text); padding: 14px 18px;
+        border-radius: 8px; overflow-x: auto; font-family: 'Consolas', monospace;
+        font-size: 13px; line-height: 1.6; margin: 12px 0; }
+
+  ol, ul { margin: 8px 0 12px 24px; }
+  li { margin-bottom: 6px; }
+
+  .footer { background: var(--navy); color: #94a3b8; text-align: center;
+            padding: 16px; font-size: 12.5px; margin-top: 40px; }
+  .footer strong { color: #cbd5e1; }
+</style>
+</head>
+<body>
+
+<div class="top-header">
+  <span class="shield">🛡️</span>
+  <h1>Model Comparison<span>initial vs revised — Image Forgery Detector</span></h1>
+  <span class="tag">AUC 0.974 vs 0.54</span>
+</div>
+
+<div class="uni-strip">
+  <strong>NED University of Engineering and Technology</strong>
+  <span>PG Diploma in Generative AI</span>
+  <span>Deep Learning</span>
+</div>
+
+<div class="wrap">
+
+  <p class="meta"><strong>Date:</strong> 2026-06-10 &nbsp;·&nbsp; <strong>Script:</strong> <code>compare_models.py</code> (standalone; not part of either app)</p>
+
+  <div class="callout note">
+    The <strong>initial</strong> model lives on the <code>main</code> git branch; the <strong>revised</strong> model lives on the <code>usama</code> git branch.
+  </div>
+
+  <h2>What was compared</h2>
+  <p>Two trained models:</p>
+  <table>
+    <thead>
+      <tr><th>Model</th><th>Model file</th><th>Architecture</th><th>Input range</th><th>Trained on</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>initial</strong></td><td><code>M3_best.keras</code> (~98 MB, LFS)</td><td>19 layers — internal <code>Rescaling</code> + ResNet <code>preprocess_input</code></td><td><strong>raw [0,255]</strong></td><td>multiply-ELA</td></tr>
+      <tr><td><strong>revised</strong></td><td><code>M3_best_v2.h5</code> (HF Hub)</td><td>191 layers — ResNet50 inlined, no internal norm</td><td><strong>/255</strong></td><td>brightness-ELA</td></tr>
+    </tbody>
+  </table>
+  <p>The two differ in <strong>two</strong> ways at once: the model <strong>weights</strong> <em>and</em> the <strong>ELA preprocessing</strong> (the <strong>initial</strong> model uses the old <code>ImageChops.multiply</code> ELA; the <strong>revised</strong> model uses the corrected brightness-enhance ELA). Each model also normalizes its input differently internally, so each must be fed the range it expects.</p>
+
+  <h2>Method</h2>
+  <ul>
+    <li><strong>Test set:</strong> the canonical CASIA test split (SEED=42, 70/15/15 stratified — the same split that produced the validated ~0.974 AUC figure).</li>
+    <li><strong>Sample:</strong> 400 stratified images, identical for both models — <strong>261 authentic / 139 forged</strong>.</li>
+    <li>Each model fed the input range it requires (<code>initial</code> → raw [0,255]; <code>revised</code> → /255).</li>
+    <li>Threshold = 0.5 for all point metrics; AUC is threshold-independent.</li>
+    <li><strong>Two views</strong> were produced (below).</li>
+  </ul>
+
+  <h2>Table A — each model as-deployed</h2>
+  <p class="meta">Faithful real-world pipelines. <code>initial</code>: multiply-ELA + raw[0,255] RGB &nbsp;|&nbsp; <code>revised</code>: brightness-ELA + /255 RGB</p>
+  <table>
+    <thead>
+      <tr><th>Metric</th><th class="num">initial (keras)</th><th class="num">revised (h5)</th><th class="num">diff (revised − initial)</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>AUC</strong></td><td class="num">0.5369</td><td class="num win">0.9741</td><td class="num pos">+0.4372</td></tr>
+      <tr><td>Accuracy</td><td class="num">0.3750</td><td class="num win">0.9100</td><td class="num pos">+0.5350</td></tr>
+      <tr><td>Balanced Acc</td><td class="num">0.5211</td><td class="num win">0.9125</td><td class="num pos">+0.3915</td></tr>
+      <tr><td>Precision</td><td class="num">0.3573</td><td class="num win">0.8366</td><td class="num pos">+0.4793</td></tr>
+      <tr><td>Recall</td><td class="num win">1.0000</td><td class="num">0.9209</td><td class="num neg">−0.0791</td></tr>
+      <tr><td>F1</td><td class="num">0.5265</td><td class="num win">0.8767</td><td class="num pos">+0.3502</td></tr>
+    </tbody>
+  </table>
+  <div class="cm">
+    <div class="cm-card">
+      <h4>initial — confusion</h4>
+      <code>[[11, 250], [0, 139]]</code>
+      <div class="desc">Flags almost everything as forged (250/261 authentic misclassified). Recall is 1.0 only because it says "forged" to nearly everything.</div>
+    </div>
+    <div class="cm-card">
+      <h4>revised — confusion</h4>
+      <code>[[236, 25], [11, 128]]</code>
+      <div class="desc">Genuinely separates the two classes.</div>
+    </div>
+  </div>
+  <p class="meta">Confusion matrix rows = true Au/Tp, cols = pred Au/Tp.</p>
+
+  <h2>Table B — same corrected ELA + RGB for both</h2>
+  <p class="meta">Both fed the identical corrected (brightness) ELA/RGB images, each in its native range.</p>
+  <table>
+    <thead>
+      <tr><th>Metric</th><th class="num">initial (keras)</th><th class="num">revised (h5)</th><th class="num">diff (revised − initial)</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>AUC</strong></td><td class="num">0.5572</td><td class="num win">0.9741</td><td class="num pos">+0.4170</td></tr>
+      <tr><td>Accuracy</td><td class="num">0.3675</td><td class="num win">0.9100</td><td class="num pos">+0.5425</td></tr>
+      <tr><td>Balanced Acc</td><td class="num">0.5153</td><td class="num win">0.9125</td><td class="num pos">+0.3972</td></tr>
+      <tr><td>Precision</td><td class="num">0.3546</td><td class="num win">0.8366</td><td class="num pos">+0.4820</td></tr>
+      <tr><td>Recall</td><td class="num win">1.0000</td><td class="num">0.9209</td><td class="num neg">−0.0791</td></tr>
+      <tr><td>F1</td><td class="num">0.5235</td><td class="num win">0.8767</td><td class="num pos">+0.3532</td></tr>
+    </tbody>
+  </table>
+  <div class="cm">
+    <div class="cm-card"><h4>initial — confusion</h4><code>[[8, 253], [0, 139]]</code></div>
+    <div class="cm-card"><h4>revised — confusion</h4><code>[[236, 25], [11, 128]]</code></div>
+  </div>
+  <div class="callout note">
+    <strong>Note:</strong> the <code>initial</code>/keras model was <em>trained</em> on multiply-ELA, so brightness-ELA is mildly out-of-distribution for it. But since it already fails on its <em>own</em> pipeline in Table A, that caveat does not change the conclusion.
+  </div>
+
+  <h2>Conclusions</h2>
+  <ol>
+    <li><strong>The <code>revised</code> model is decisively better</strong> — AUC ≈ <strong>0.974 vs ≈ 0.54</strong> (near-random). This holds in <em>both</em> views, so it is <strong>not</strong> an artifact of the preprocessing differences.</li>
+    <li><strong>The <code>initial</code> model is effectively broken on this test set</strong> — it predicts "forged" for almost every image (AUC ~0.54 ≈ coin flip). Swapping in the corrected ELA (Table B) barely moves it (0.537 → 0.557), confirming the problem is the <strong>model weights</strong>, not the pipeline.</li>
+    <li>The earlier all-forged behavior was coming from the <code>initial</code> model itself; the <code>revised</code> model (corrected ELA <strong>and</strong> the v2 weights) reproduces the validated ~0.974 AUC / ~91% accuracy.</li>
+  </ol>
+  <div class="callout good">
+    <strong>Bottom line:</strong> keep the <code>revised</code> model — it is the working one. The <code>initial</code> model should not be used.
+  </div>
+
+  <h2>How to reproduce</h2>
+  <pre># from the usama branch (which carries the revised model), with the .venv active
+git checkout main -- M3_best.keras    # materialize the initial model via LFS
+python compare_models.py              # prints Table A and Table B
+git rm --cached M3_best.keras &amp;&amp; rm M3_best.keras   # clean up afterwards</pre>
+  <p class="meta">Requires the CASIA v2 dataset at <code>G:/My Drive/CASIA2</code> (with <code>Au/</code>, <code>Tp/</code>, and the <code>CASIA2_ELA/</code> cache) and the HF-cached <code>M3_best_v2.h5</code>.</p>
+
+</div>
+
+<div class="footer">
+  <strong>Contributors:</strong> Salman Zaman · Muhammad Usama Alam &nbsp;|&nbsp;
+  <strong>Project Coordinator:</strong> Sajid Majeed &nbsp;·&nbsp;
+  NED University of Engineering and Technology
+</div>
+
+</body>
+</html>
