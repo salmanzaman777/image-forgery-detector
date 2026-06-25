@@ -842,7 +842,7 @@ a larger, more diverse dataset would improve real-world generalization.
 st.markdown("""
 <div class="ned-footer">
   <div>
-    <strong>Contributors:</strong>&nbsp; Salman Zaman &nbsp;·&nbsp; Muhammad Usama Alam
+    <strong>Contributors:</strong>&nbsp; Salman Zaman &nbsp;·&nbsp; Muhammad Usama Alam &nbsp;·&nbsp; Muhammad Zafar Khan
   </div>
   <div>
     <strong>Project Coordinator:</strong>&nbsp; Sajid Majeed

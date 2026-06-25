@@ -369,7 +369,7 @@ def slide_01_title(prs):
 
     # Contributors block
     contrib_lines = [
-        "Salman Zaman  ·  Muhammad Usama Alam",
+        "Salman Zaman  ·  Muhammad Usama Alam ·  Muhammad Zafar Khan",
         "Project Coordinator: Sajid Majeed",
     ]
     for i, line in enumerate(contrib_lines):
